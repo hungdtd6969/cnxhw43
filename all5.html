@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Trắc Nghiệm - Chủ Nghĩa Xã Hội Khoa Học</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --correct-color: #2ecc71;
+            --wrong-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+        .score-board {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            font-weight: bold;
+            border: 1px solid #e0e0e0;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-num {
+            font-size: 1.2rem;
+        }
+
+        .correct-num { color: var(--correct-color); }
+        .wrong-num { color: var(--wrong-color); }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background-color: #f1f3f5;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-color);
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background-color: #e2e8f0;
+            border-color: var(--accent-color);
+        }
+
+        .option-btn.correct {
+            background-color: #d4edda !important;
+            border-color: var(--correct-color) !important;
+            color: #155724 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #f8d7da !important;
+            border-color: var(--wrong-color) !important;
+            color: #721c24 !important;
+        }
+
+        .explanation {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--accent-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        .explanation strong {
+            color: #2980b9;
+        }
+
+        .reset-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Ngân Hàng Câu Hỏi Ôn Tập Môn CNXHKH</h1>
+        <p>Chọn đáp án trực tiếp để kiểm tra kết quả và xem giải thích</p>
+    </header>
+
+    <div class="score-board">
+        <div class="score-item">Đã làm: <span id="answered-count" class="score-num">0</span>/<span id="total-count">0</span></div>
+        <div class="score-item">Đúng: <span id="correct-count" class="score-num correct-num">0</span></div>
+        <div class="score-item">Sai: <span id="wrong-count" class="score-num wrong-num">0</span></div>
+    </div>
+
+    <div id="quiz-container">
+        <!-- Câu hỏi sẽ được render tự động bằng Javascript -->
+    </div>
+
+    <button class="reset-btn" onclick="resetQuiz()">Làm Lại Từ Đầu</button>
+</div>
+
+<script>
+const quizData = [
+    // Vấn đề Tôn giáo
+    {
+        question: "Một trong những quan điểm cơ bản của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề tôn giáo là:",
+        options: [
+            "Thực hiện đoàn kết dân tộc",
+            "Thực hiện đoàn kết các tôn giáo",
+            "Thực hiện đoàn kết toàn dân tộc, đoàn kết các tôn giáo",
+            "Cả A, B, C đều sai"
+        ],
+        answer: 2,
+        explanation: "Tư tưởng chiến lược trong công tác tôn giáo luôn đòi hỏi phải quy tụ được sức mạnh của khối đại đoàn kết toàn dân tộc gắn kết chặt chẽ với khối đại đoàn kết giữa những người theo tôn giáo và không theo tôn giáo."
+    },
+    {
+        question: "Có mấy quan điểm cơ bản của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề tôn giáo?",
+        options: ["5 quan điểm", "6 quan điểm", "7 quan điểm", "8 quan điểm"],
+        answer: 0,
+        explanation: "Theo giáo trình Chủ nghĩa xã hội khoa học, hệ thống quan điểm, nguyên tắc cơ bản của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề tôn giáo bao gồm đúng 5 quan điểm cốt lõi."
+    },
+    {
+        question: "Lênin đã viết: \"Đối với chúng ta, sự thống nhất của cuộc đấu tranh thực sự cách mạng đó của giai cấp bị áp bức để sáng tạo nên một cõi cực lạc trên trái đất là quan trọng hơn sự thống nhất ý kiến của những người vô sản về cõi cực lạc trên thiên đường\". Luận điểm này muốn chỉ ra điều gì?",
+        options: [
+            "Trong giải quyết vấn đề tôn giáo, việc xây dựng cuộc sống hạnh phúc thực sự cho nhân dân quan trọng hơn việc phê phán tôn giáo",
+            "Trong giải quyết vấn đề tôn giáo phải kiên quyết xóa bỏ tôn giáo, xóa bỏ các đối tượng mà tôn giáo tôn thờ",
+            "Trong giải quyết vấn đề tôn giáo phải ca ngợi cuộc sống hạnh phúc trên trái đất để thuyết phục nhân dân từ bỏ tôn giáo",
+            "Trong giải quyết vấn đề tôn giáo, điều quan trọng nhất là thống nhất ý kiến của những người vô sản về tôn giáo"
+        ],
+        answer: 0,
+        explanation: "Luận điểm của Lênin nhấn mạnh tư tưởng thực tiễn: thay vì sa đà vào tranh cãi lý luận, triết học hay chỉ trích tôn giáo một cách cực đoan, điều cốt lõi và quan trọng nhất của người cộng sản là phải chăm lo cải thiện đời sống vật chất, tinh thần, mang lại hạnh phúc thực tế cho nhân dân ngay trên Trái Đất."
+    },
+    {
+        question: "Nội dung cốt lõi trong công tác tôn giáo ở Việt Nam là gì?",
+        options: [
+            "Công tác vận động quần chúng",
+            "Công tác của Đảng và Nhà nước",
+            "Nhiệm vụ quan trọng nhất của giai cấp công nhân và nhân dân lao động",
+            "Đấu tranh chống sự lợi dụng của giai cấp thống trị"
+        ],
+        answer: 0,
+        explanation: "Quan điểm nhất quán của Đảng ta khẳng định công tác tôn giáo thực chất là công tác vận động quần chúng (vận động đồng bào có đạo sống \"tốt đời, đẹp đạo\", đoàn kết xây dựng đất nước)."
+    },
+    {
+        question: "Một trong những trách nhiệm của Nhà nước Việt Nam trong bảo đảm quyền tự do tín ngưỡng, tôn giáo là gì?",
+        options: [
+            "Bảo đảm để các tôn giáo bình đẳng trước pháp luật",
+            "Bảo đảm để các tôn giáo tự do trong mọi hoạt động",
+            "Bảo đảm tài chính để các tôn giáo hoạt động",
+            "Xây dựng hiến chương để các tôn giáo hoạt động"
+        ],
+        answer: 0,
+        explanation: "Nhà nước quản lý xã hội bằng pháp luật, đảm bảo mọi tổ chức tôn giáo hợp pháp đều có quyền bình đẳng trước pháp luật, không có tôn giáo nào được hưởng đặc quyền vượt lên trên pháp luật."
+    },
+    {
+        question: "Một trong những nguyên nhân làm cho tôn giáo có xu hướng phát triển trong những năm cuối thế kỷ XX là gì?",
+        options: [
+            "Trên thế giới còn tồn tại nhiều tệ nạn xã hội làm cho con người lo lắng, tìm chỗ dựa ở tôn giáo",
+            "Dân số ngày càng tăng nên có nhiều người theo tôn giáo hơn",
+            "Tôn giáo hiện nay hoàn toàn không bị ảnh hưởng bởi các vấn đề chính trị",
+            "Khoa học kỹ thuật ngày càng phát triển"
+        ],
+        answer: 0,
+        explanation: "Sự bất định của thế giới hiện đại (chiến tranh, khủng hoảng kinh tế, dịch bệnh, các tệ nạn xã hội và hiểm họa toàn cầu) khiến con người đối mặt với nhiều bất an, lo âu, từ đó có xu hướng tìm kiếm sự an ủi, nương tựa vào tín ngưỡng, tôn giáo."
+    },
+    {
+        question: "Trong tiến trình xây dựng chủ nghĩa xã hội, tôn giáo vẫn còn tồn tại do mấy nguyên nhân?",
+        options: ["5 nguyên nhân", "6 nguyên nhân", "7 nguyên nhân", "8 nguyên nhân"],
+        answer: 0,
+        explanation: "Theo lý luận chủ nghĩa xã hội khoa học, sự tồn tại dai dẳng của tôn giáo trong thời kỳ quá độ xuất phát từ 5 nhóm nguyên nhân chính: nguyên nhân kinh tế, nguyên nhân chính trị - xã hội, nguyên nhân nhận thức, nguyên nhân tâm lý và nguyên nhân văn hóa."
+    },
+    {
+        question: "Sự bất lực của con người trước sức mạnh tự phát của tự nhiên và xã hội là nội dung của nguyên nhân nào lý giải sự tồn tại của tôn giáo?",
+        options: ["Chính trị - xã hội", "Nhận thức", "Kinh tế", "Tâm lý"],
+        answer: 1,
+        explanation: "Nguyên nhân nhận thức gắn liền với giới hạn hiểu biết của con người. Khi khoa học chưa giải thích được các hiện tượng tự nhiên hay xã hội, sự bất lực trước thực tế đó tạo ra sự suy diễn thần bí (nguồn gốc nhận thức)."
+    },
+    {
+        question: "Khoa học chưa phát triển cho nên chưa lý giải được nhiều hiện tượng trong tự nhiên, xã hội và của con người là nội dung của nguyên nhân nào lý giải sự tồn tại của tôn giáo?",
+        options: ["Văn hóa", "Tâm lý", "Chính trị - xã hội", "Nhận thức"],
+        answer: 3,
+        explanation: "Đây tiếp tục là một biểu hiện cụ thể của nguyên nhân nhận thức: khoảng trống kiến thức khoa học là mảnh đất màu mỡ để tôn giáo và thế giới quan duy tâm duy trì ảnh hưởng."
+    },
+    {
+        question: "Sự khác biệt về lợi ích kinh tế giữa các giai cấp, tầng lớp xã hội trong nền kinh tế nhiều thành phần là nội dung của nguyên nhân nào lý giải cho sự tồn tại của tôn giáo?",
+        options: ["Nhận thức", "Tâm lý", "Văn hóa", "Kinh tế"],
+        answer: 3,
+        explanation: "Sự tồn tại của nền kinh tế nhiều thành phần với những lợi ích kinh tế khác nhau, sự phân hóa giàu nghèo hoặc rủi ro trong sản xuất kinh doanh tạo ra những biến động xã hội, phản ánh trực tiếp vào nguyên nhân kinh tế của tôn giáo."
+    },
+    {
+        question: "Tôn giáo trở thành niềm tin, lối sống, phong tục tập quán, tình cảm của một bộ phận đông đảo nhân dân qua nhiều thế hệ là nội dung của nguyên nhân nào lý giải cho sự tồn tại của tôn giáo?",
+        options: ["Tâm lý", "Chính trị - xã hội", "Kinh tế", "Văn hóa"],
+        answer: 0,
+        explanation: "Tôn giáo khi đã trải qua quá trình lịch sử lâu dài sẽ ngấm sâu vào đời sống tình cảm, tâm lý, trở thành thói quen, nếp sống và phong tục tập quán của một bộ phận cộng đồng (nguyên nhân tâm lý)."
+    },
+    {
+        question: "Nguyên nhân tâm lý giải thích sự tồn tại của tôn giáo trong tiến trình xây dựng chủ nghĩa xã hội là do:",
+        options: [
+            "Tôn giáo chứa đựng nhiều giá trị chưa phù hợp với đạo lý con người",
+            "Tôn giáo đã trở thành niềm tin, phong tục, tập quán của một bộ phận nhân dân",
+            "Tôn giáo đáp ứng được nhu cầu vật chất của nhân dân",
+            "Cả A, B, C đều đúng"
+        ],
+        answer: 1,
+        explanation: "Khía cạnh tâm lý của tôn giáo được củng cố vững chắc thông qua sự bồi đắp của truyền thống, niềm tin lâu đời, trở thành một phần trong văn hóa ứng xử và nếp sống tinh thần của quần chúng tín đồ."
+    },
+
+    // Chương 8 - Gia đình
+    {
+        question: "Bình đẳng trong quan hệ gia đình phụ thuộc vào yếu tố nào sau đây?",
+        options: [
+            "Xóa bỏ chế độ tư hữu về tư liệu sản xuất",
+            "Xóa bỏ chế độ công hữu nguyên thủy",
+            "Xóa bỏ chế độ tư hữu phong kiến",
+            "Xóa bỏ chế độ tư hữu tư bản chủ nghĩa"
+        ],
+        answer: 0,
+        explanation: "Theo quan điểm của chủ nghĩa Mác - Lênin, sự bất bình đẳng trong gia đình (đặc biệt là sự lệ thuộc của người phụ nữ) bắt nguồn từ sự xuất hiện của chế độ tư hữu. Do đó, bình đẳng trong gia đình chỉ thực sự được thiết lập triệt để khi xóa bỏ được chế độ tư hữu về tư liệu sản xuất."
+    },
+    {
+        question: "Chế độ hôn nhân tiến bộ được hiểu là gì?",
+        options: [
+            "Là hôn nhân dựa trên cơ sở tiến bộ của khoa học và công nghệ hiện đại",
+            "Là hôn nhân dựa trên cơ sở phát triển của lực lượng sản xuất",
+            "Là hôn nhân dựa trên cơ sở tự nguyện giữa nam và nữ",
+            "Là hôn nhân dựa trên cơ sở của nền đại công nghiệp"
+        ],
+        answer: 2,
+        explanation: "Hôn nhân tiến bộ là hôn nhân xuất phát từ tình yêu chân chính, dựa trên cơ sở tự nguyện hoàn toàn giữa nam và nữ, không bị ép buộc, cản trở bởi các yếu tố giai cấp, tôn giáo hay tiền tài."
+    },
+    {
+        question: "Trong nền sản xuất hiện đại, quy mô gia đình Việt Nam có xu hướng như thế nào?",
+        options: ["Mở rộng", "Thu nhỏ", "Triệt tiêu hóa", "Trí thức hóa"],
+        answer: 1,
+        explanation: "Dưới tác động của công nghiệp hóa, hiện đại hóa và đời sống đô thị, cấu trúc và quy mô gia đình truyền thống (đại gia đình nhiều thế hệ) có xu hướng chuyển biến thành gia đình hạt nhân với quy mô ngày càng thu nhỏ."
+    },
+    {
+        question: "Điểm mới của chức năng tái sản xuất ra con người trong điều kiện của cách mạng khoa học và công nghệ hiện nay là gì?",
+        options: [
+            "Chủ động hơn",
+            "Bị động hơn",
+            "Bị chi phối bởi nhu cầu tự thân của gia đình, dòng họ",
+            "Bị chi phối bởi nhu cầu của xã hội về đội ngũ trí thức"
+        ],
+        answer: 0,
+        explanation: "Nhờ sự phát triển của y học hiện đại, kế hoạch hóa gia đình và các thành tựu khoa học kỹ thuật, việc thực hiện chức năng sinh đẻ, tái sản xuất ra con người của các gia đình hiện đại ngày càng trở nên chủ động, tự giác hơn."
+    },
+    {
+        question: "Hãy chọn một chức năng cơ bản của gia đình:",
+        options: [
+            "Chức năng thế giới quan",
+            "Chức năng pháp luật",
+            "Chức năng tái sản xuất ra con người",
+            "Chức năng tổ chức xây dựng xã hội"
+        ],
+        answer: 2,
+        explanation: "Gia đình có các chức năng cơ bản bao gồm: chức năng tái sản xuất ra con người, chức năng kinh tế và tổ chức tiêu dùng, chức năng giáo dục, và chức năng thỏa mãn nhu cầu tâm sinh lý, duy trì tình cảm."
+    },
+    {
+        question: "Chọn phương án đúng nhất. Gia đình là một hình thức cộng đồng đặc biệt bao gồm các mối quan hệ cơ bản nào?",
+        options: [
+            "Quan hệ hôn nhân và quan hệ huyết thống",
+            "Quan hệ hôn nhân và quan hệ giáo dục",
+            "Quan hệ nuôi dưỡng và quan hệ giáo dục",
+            "Quan hệ huyết thống và quan hệ giáo dục"
+        ],
+        answer: 0,
+        explanation: "Về mặt cấu trúc, gia đình được hình thành và duy trì dựa trên hai mối quan hệ cốt lõi và bền chặt nhất: quan hệ hôn nhân (vợ chồng) và quan hệ huyết thống (cha mẹ - con cái)."
+    },
+    {
+        question: "Cơ sở để xây dựng gia đình trong thời kỳ quá độ lên chủ nghĩa xã hội là gì?",
+        options: [
+            "Cơ sở kinh tế - xã hội",
+            "Cơ sở chính trị, cơ sở văn hóa",
+            "Chế độ hôn nhân tiến bộ",
+            "Cả A, B, C đều đúng"
+        ],
+        answer: 3,
+        explanation: "Việc xây dựng gia đình xã hội chủ nghĩa đòi hỏi phải dựa trên hệ thống cơ sở đồng bộ bao gồm: cơ sở kinh tế - xã hội, cơ sở chính trị, cơ sở văn hóa và chế độ hôn nhân tiến bộ."
+    },
+    {
+        question: "Hình thức gia đình tập thể tồn tại trong chế độ xã hội nào?",
+        options: ["Nguyên thủy", "Phong kiến", "Tư bản chủ nghĩa", "Xã hội chủ nghĩa"],
+        answer: 0,
+        explanation: "Trong lịch sử phát triển của hình thái gia đình loài người, gia đình tập thể (với các hình thức quần hôn) là hình thức cộng đồng gia đình xuất hiện và tồn tại trong thời kỳ xã hội cộng sản nguyên thủy."
+    },
+    {
+        question: "Yếu tố nào quyết định nhất đến sự thay thế các hình thức gia đình trong lịch sử?",
+        options: ["Yếu tố chính trị", "Yếu tố kinh tế", "Yếu tố văn hóa", "Yếu tố tâm linh"],
+        answer: 1,
+        explanation: "Giống như sự phát triển của các hình thái kinh tế - xã hội, phương thức sản xuất và các yếu tố kinh tế (quan hệ sở hữu, lực lượng sản xuất) giữ vai trò quyết định, chi phối sự biến đổi và thay thế của các hình thức gia đình trong lịch sử."
+    },
+    {
+        question: "Chức năng nào là đặc thù của gia đình?",
+        options: [
+            "Chức năng tái sản xuất ra con người",
+            "Chức năng giáo dục và xã hội hóa",
+            "Chức năng đối nội",
+            "Chức năng đối ngoại"
+        ],
+        answer: 0,
+        explanation: "Tái sản xuất ra con người (sinh đẻ, duy trì nòi giống) là chức năng sinh học, tự nhiên và là chức năng đặc thù riêng có của gia đình mà không một tổ chức hay cộng đồng nào khác có thể thay thế được."
+    },
+    {
+        question: "Luận điểm \"Gia đình là tế bào của xã hội\" được hiểu như thế nào?",
+        options: [
+            "Gia đình quyết định sự tồn tại, vận động và phát triển của xã hội",
+            "Gia đình quyết định đến quan hệ giai cấp và đấu tranh giai cấp",
+            "Gia đình quyết định đến quan hệ bình đẳng, công bằng trong xã hội",
+            "Gia đình quyết định đến sự giàu có của xã hội"
+        ],
+        answer: 0,
+        explanation: "Gia đình là tế bào bởi vì nó là đơn vị cơ sở sản xuất ra con người – nguồn lực quyết định sự tồn tại và phát triển không ngừng của toàn bộ cấu trúc xã hội."
+    },
+    {
+        question: "Sự biến đổi của gia đình Việt Nam trong thời kỳ quá độ lên chủ nghĩa xã hội biểu hiện ở nội dung nào?",
+        options: [
+            "Biến đổi về quy mô, kết cấu gia đình",
+            "Biến đổi về các chức năng của gia đình",
+            "Biến đổi về quan hệ trong gia đình",
+            "Cả A, B, C đều đúng"
+        ],
+        answer: 3,
+        explanation: "Dưới tác động của công nghiệp hóa và kinh tế thị trường, gia đình Việt Nam hiện đại đang trải qua sự chuyển biến toàn diện trên tất cả các phương diện: quy mô cấu trúc (từ đại gia đình sang gia đình hạt nhân), các chức năng, và hệ thống quan hệ tình cảm, ứng xử bên trong gia đình."
+    },
+    {
+        question: "Cơ sở kinh tế để xây dựng gia đình trong thời kỳ quá độ lên chủ nghĩa xã hội là gì?",
+        options: [
+            "Chế độ sở hữu xã hội đối với tư liệu sản xuất (chế độ công hữu)",
+            "Chế độ sở hữu tư nhân đối với tư liệu sản xuất",
+            "Sản xuất hàng hóa tự do",
+            "Sản xuất tự cấp, tự túc"
+        ],
+        answer: 0,
+        explanation: "Cơ sở kinh tế vững chắc để xây dựng gia đình xã hội chủ nghĩa (bình đẳng, tiến bộ, hạnh phúc) chính là chế độ công hữu về những tư liệu sản xuất chủ yếu, xóa bỏ áp bức và sự lệ thuộc kinh tế."
+    },
+    {
+        question: "Hãy chọn một chức năng cơ bản của gia đình:",
+        options: [
+            "Chức năng thế giới quan",
+            "Chức năng nuôi dưỡng và giáo dục",
+            "Chức năng phương pháp luận",
+            "Chức năng định hướng lý tưởng"
+        ],
+        answer: 1,
+        explanation: "Bên cạnh tái sản xuất ra con người và kinh tế, gia đình còn đảm nhiệm chức năng nuôi dưỡng, giáo dục thế hệ trẻ, hình thành nhân cách và truyền thụ đạo đức cho con cái."
+    },
+    {
+        question: "Đặc thù riêng có trong chức năng kinh tế của gia đình là gì?",
+        options: [
+            "Gia đình là chủ thể quản lý sản xuất",
+            "Gia đình là chủ thể sản xuất ra tư liệu sản xuất",
+            "Gia đình là chủ thể sản xuất và tái sản xuất ra sức lao động",
+            "Gia đình là chủ thể phân phối của cải"
+        ],
+        answer: 2,
+        explanation: "Dù gia đình cũng tham gia sản xuất kinh tế, nhưng đặc thù mang tính nền tảng của gia đình trong lĩnh vực này là sản xuất và tái sản xuất ra sức lao động để duy trì sự sống của các thành viên và cung cấp nguồn nhân lực cho xã hội."
+    },
+    {
+        question: "Đặc thù riêng có trong chức năng giáo dục của gia đình là gì?",
+        options: [
+            "Gia đình là môi trường giáo dục thường xuyên đối với mỗi cá nhân",
+            "Gia đình là môi trường giáo dục đầu tiên và kéo dài suốt đời đối với mỗi cá nhân",
+            "Gia đình là môi trường giáo dục đạo đức hiệu quả đối với mỗi cá nhân",
+            "Gia đình là môi trường giáo dục lối sống hiệu quả đầu tiên mỗi cá nhân"
+        ],
+        answer: 1,
+        explanation: "Giáo dục gia đình là nền tảng đầu đời định hình nhân cách trẻ nhỏ (môi trường giáo dục đầu tiên) và đồng thời là tấm lưới bảo bọc, gắn bó, ảnh hưởng và kéo dài suốt cuộc đời của mỗi con người."
+    },
+    {
+        question: "Chỉ ra luận điểm đúng về gia đình:",
+        options: [
+            "Gia đình là một cộng đồng xã hội đặc biệt tồn tại lâu dài trong lịch sử xã hội",
+            "Gia đình là một cộng đồng xã hội đặc biệt chỉ tồn tại trong một giai đoạn lịch sử nhất định",
+            "Gia đình là một tổ chức trong hệ thống chính trị cơ sở",
+            "Gia đình là cầu nối giữa các bộ phận trong hệ thống chính trị cơ sở"
+        ],
+        answer: 0,
+        explanation: "Gia đình là hình thức cộng đồng xã hội cơ bản, đặc biệt của con người, gắn liền với mọi giai đoạn phát triển của lịch sử nhân loại (tồn tại lâu dài, xuyên suốt từ quá khứ, hiện tại và tương lai)."
+    },
+    {
+        question: "Hãy chọn một chức năng cơ bản của gia đình:",
+        options: [
+            "Chức năng thế giới quan",
+            "Chức năng kinh tế và tổ chức tiêu dùng",
+            "Chức năng phương pháp luận",
+            "Chức năng định hướng lý tưởng"
+        ],
+        answer: 1,
+        explanation: "Các chức năng cơ bản của gia đình bao gồm: tái sản xuất ra con người, kinh tế và tổ chức tiêu dùng, giáo dục, và thỏa mãn nhu cầu tâm sinh lý (duy trì tình cảm)."
+    },
+    {
+        question: "Cơ sở hình thành nên gia đình là gì?",
+        options: ["Quan hệ hôn nhân", "Quan hệ văn hóa", "Quan hệ chính trị", "Quan hệ xã hội"],
+        answer: 0,
+        explanation: "Quan hệ hôn nhân (giữa vợ và chồng) là cơ sở pháp lý và tự nhiên đầu tiên để xác lập, kết nối các thành viên và hình thành nên một gia đình mới."
+    },
+    {
+        question: "Điền vào chỗ trống để hoàn thiện luận điểm của Chủ tịch Hồ Chí Minh: \"Nhiều gia đình cộng lại mới thành xã hội, xã hội tốt thì gia đình càng tốt, gia đình tốt thì xã hội mới tốt. Hạt nhân của xã hội là...\".",
+        options: ["Gia đình", "Cộng đồng", "Dân tộc", "Cá nhân"],
+        answer: 0,
+        explanation: "Chủ tịch Hồ Chí Minh đã khẳng định vị trí nền tảng, cốt lõi của gia đình đối với xã hội: gia đình chính là \"hạt nhân của xã hội\"."
+    },
+    {
+        question: "Đặc trưng của cộng đồng gia đình là gì?",
+        options: ["Yếu tố tình cảm", "Yếu tố tâm lý", "Yếu tố kinh tế", "Yếu tố chính trị"],
+        answer: 0,
+        explanation: "Khác với các tổ chức xã hội khác, gia đình được gắn kết chặt chẽ và bền vững trước hết bởi tình yêu thương, sự hy sinh và các yếu tố tình cảm thiêng liêng giữa các thành viên."
+    },
+    {
+        question: "Chế độ hôn nhân tiến bộ dựa trên cơ sở nào?",
+        options: [
+            "Hôn nhân tự nguyện",
+            "Hôn nhân một vợ một chồng, bình đẳng",
+            "Hôn nhân được đảm bảo về mặt pháp lý",
+            "Cả A, B, C đều đúng"
+        ],
+        answer: 3,
+        explanation: "Hôn nhân tiến bộ phải hội tụ đủ các tiêu chí: xuất phát từ tình yêu và sự tự nguyện hoàn toàn, thực hiện chế độ một vợ một chồng, vợ chồng bình đẳng, và phải được pháp luật nhà nước công nhận, bảo vệ."
+    },
+    {
+        question: "Yếu tố nào quyết định nhất đến sự ra đời của gia đình một vợ một chồng?",
+        options: [
+            "Chế độ tư hữu về tư liệu sản xuất",
+            "Chế độ hôn nhân tiến bộ",
+            "Nhu cầu phát triển của sản xuất hàng hóa",
+            "Nhu cầu phát triển của sản xuất tự cấp tự túc"
+        ],
+        answer: 0,
+        explanation: "Theo Ăngghen, sự xuất hiện của chế độ tư hữu về tư liệu sản xuất trong lịch sử đã dẫn đến sự phân chia giai cấp và sự thống trị của nam giới trong gia đình, làm xuất hiện kiểu gia đình một vợ một chồng (với mục đích đảm bảo quyền thừa kế tài sản chính thống cho đời sau)."
+    },
+    {
+        question: "Đặc điểm của hình thức gia đình tập thể là gì?",
+        options: ["Chế độ mẫu hệ", "Chế độ phụ hệ", "Chế độ tư hữu", "Chế độ bóc lột"],
+        answer: 0,
+        explanation: "Trong giai đoạn đầu của xã hội cộng sản nguyên thủy (gia đình tập thể với hình thức quần hôn), do chưa xác định được rõ ràng quan hệ cha mẹ, huyết thống chủ yếu tính theo dòng mẹ, gắn liền với chế độ mẫu hệ."
+    },
+    {
+        question: "Điền vào chỗ trống để hoàn thành mục tiêu xây dựng gia đình Việt Nam được nêu trong Chiến lược phát triển gia đình Việt Nam đến năm 2020, tầm nhìn đến năm 2030: \"Xây dựng gia đình Việt Nam no ấm, [...], hạnh phúc, thực sự là tổ ấm của mỗi người, là tế bào lành mạnh của xã hội\".",
+        options: ["Tiến bộ", "Bền vững", "Bình đẳng", "Công bằng"],
+        answer: 0,
+        explanation: "Theo Chiến lược phát triển gia đình Việt Nam, mục tiêu cốt lõi đặt ra là xây dựng hệ giá trị gia đình \"no ấm, tiến bộ, hạnh phúc, văn minh\"."
+    },
+    {
+        question: "Thông điệp mới trong chức năng tái sản xuất ra con người ở Việt Nam những năm 20 của thế kỷ XXI là gì?",
+        options: [
+            "Mỗi gia đình chỉ nên có một con",
+            "Mỗi gia đình chỉ nên có từ một đến hai con",
+            "Mỗi gia đình nên sinh đủ hai con",
+            "Mỗi gia đình nên sinh con theo ý muốn"
+        ],
+        answer: 2,
+        explanation: "Trước bối cảnh mức sinh ở một số vùng có xu hướng biến động hoặc giảm thấp, chính sách dân số hiện nay đưa ra thông điệp vận động mỗi gia đình nên sinh đủ hai con để đảm bảo thay thế dân số hợp lý."
+    },
+    {
+        question: "Điền vào chỗ trống để hoàn thiện luận điểm của Chủ tịch Hồ Chí Minh: \"Nếu không [...] thì xây dựng chủ nghĩa xã hội chỉ một nửa\".",
+        options: ["Giải phóng giai cấp", "Giải phóng dân tộc", "Giải phóng con người", "Giải phóng phụ nữ"],
+        answer: 3,
+        explanation: "Chủ tịch Hồ Chí Minh khẳng định vai trò vĩ đại của phụ nữ và vấn đề bình đẳng giới: nếu không giải phóng phụ nữ thì coi như chưa giải phóng một nửa xã hội, và việc xây dựng chủ nghĩa xã hội mới chỉ được một nửa."
+    },
+    {
+        question: "Điền vào chỗ trống để hoàn thiện luận điểm của Ph. Ăngghen: \"Nếu chỉ riêng hôn nhân dựa trên cơ sở [...] mới là hợp đạo đức, thì cũng chỉ riêng hôn nhân trong đó [...] được duy trì mới là hợp đạo đức mà thôi\".",
+        options: [
+            "Tình yêu / tình yêu",
+            "Sự tự nguyện / sự tự nguyện",
+            "Sự bình đẳng / sự bình đẳng",
+            "Sự công bằng / sự công bằng"
+        ],
+        answer: 0,
+        explanation: "Ăngghen đề cao bản chất nhân văn và tiến bộ của hôn nhân xã hội chủ nghĩa, khẳng định nền tảng đạo đức duy nhất và cao đẹp nhất của hôn nhân chính là tình yêu chân chính."
+    },
+    {
+        question: "Hãy chọn một chức năng cơ bản của gia đình:",
+        options: [
+            "Chức năng thế giới quan",
+            "Chức năng phương pháp luận",
+            "Chức năng tổ chức xây dựng xã hội",
+            "Chức năng thỏa mãn nhu cầu tâm sinh lý, duy trì tình cảm"
+        ],
+        answer: 3,
+        explanation: "Bên cạnh các chức năng tái sản xuất, kinh tế, giáo dục, gia đình còn có chức năng vô cùng quan trọng là đáp ứng các nhu cầu tâm sinh lý, chăm sóc đời sống tinh thần và duy trì tình cảm giữa các thành viên."
+    },
+    {
+        question: "Điều kiện quy định các hình thức tổ chức gia đình trong lịch sử là gì?",
+        options: ["Kinh tế - xã hội", "Tâm lý - xã hội", "Chính trị - xã hội", "Cả A, B, C đều đúng"],
+        answer: 0,
+        explanation: "Xét đến cùng, phương thức sản xuất và các điều kiện kinh tế - xã hội đóng vai trò quyết định sự hình thành, vận động và thay đổi của các hình thức tổ chức gia đình qua các thời kỳ lịch sử."
+    },
+    {
+        question: "Xã hội loài người đã trải qua các hình thức cộng đồng gia đình nào?",
+        options: [
+            "Gia đình huyết tộc",
+            "Gia đình đối ngẫu",
+            "Gia đình một vợ một chồng",
+            "Cả A, B, C đều đúng"
+        ],
+        answer: 3,
+        explanation: "Lịch sử phát triển gia đình nhân loại trải qua các hình thức từ thấp đến cao: gia đình huyết tộc (quần hôn theo thế hệ), gia đình vũng lại/đối ngẫu (từng đôi tạm thời), cho đến gia đình một vợ một chồng trong xã hội có giai cấp."
+    },
+    {
+        question: "Trong nền văn hóa xã hội chủ nghĩa, xây dựng gia đình văn hóa dựa trên cơ sở nào?",
+        options: [
+            "Giữ gìn và phát huy giá trị văn hóa tốt đẹp của dân tộc",
+            "Xóa bỏ những yếu tố lạc hậu của gia đình cũ",
+            "Tiếp thu giá trị tiến bộ của nhân loại về gia đình",
+            "Cả A, B, C đều đúng"
+        ],
+        answer: 3,
+        explanation: "Quá trình xây dựng gia đình văn hóa mới trong thời kỳ quá độ đòi hỏi sự kết hợp đồng bộ: vừa bảo tồn bản sắc văn hóa truyền thống tốt đẹp, vừa kiên quyết bài trừ tàn dư phong kiến lạc hậu, đồng thời chọn lọc tiếp thu tinh hoa văn hóa nhân loại."
+    },
+
+    // Giai cấp công nhân
+    {
+        question: "Điều kiện khách quan quy định sứ mệnh lịch sử của giai cấp công nhân là:",
+        options: [
+            "Địa vị kinh tế - xã hội của giai cấp công nhân và đặc điểm chính trị - xã hội của giai cấp công nhân",
+            "Tinh thần cách mạng triệt để của giai cấp công nhân",
+            "Tinh thần đoàn kết",
+            "Tính tổ chức chính trị vững vàng của giai cấp công nhân và sự đồng tình của nhân dân lao động"
+        ],
+        answer: 0,
+        explanation: "Điều kiện khách quan quy định sứ mệnh lịch sử của giai cấp công nhân bao gồm địa vị kinh tế - xã hội và đặc điểm chính trị - xã hội của giai cấp công nhân."
+    },
+    {
+        question: "Vì sao giai cấp công nhân có khả năng đoàn kết với các giai cấp, tầng lớp lao động khác trong xã hội?",
+        options: [
+            "Vì có sự thống nhất về lợi ích, trong đó lợi ích kinh tế là quan trọng nhất",
+            "Vì giai cấp công nhân có số lượng đông đảo nhất trong xã hội",
+            "Vì giai cấp công nhân có sức hút lớn nhất",
+            "Vì giai cấp công nhân có lợi ích hoàn toàn khác với các giai cấp, tầng lớp khác"
+        ],
+        answer: 0,
+        explanation: "Giai cấp công nhân có khả năng đoàn kết với các giai cấp, tầng lớp khác vì có sự thống nhất về lợi ích. Trong các lợi ích đó, sự thống nhất về lợi ích kinh tế là trọng tâm."
+    },
+    {
+        question: "Nhân tố chủ quan nào có ý nghĩa quyết định đối với việc thực hiện thắng lợi sứ mệnh lịch sử của giai cấp công nhân?",
+        options: [
+            "Vai trò lãnh đạo của Đảng Cộng sản",
+            "Sự phát triển của lực lượng sản xuất",
+            "Sự đồng tình của các giai cấp khác",
+            "Số lượng của giai cấp công nhân"
+        ],
+        answer: 0,
+        explanation: "Theo lời giảng, nhân tố chủ quan có ý nghĩa quyết định là vai trò lãnh đạo của Đảng Cộng sản."
+    },
+    {
+        question: "Mục tiêu cao nhất trong sự nghiệp cách mạng của giai cấp công nhân là gì?",
+        options: [
+            "Giành chính quyền",
+            "Xóa bỏ chế độ tư bản chủ nghĩa",
+            "Giải phóng giai cấp công nhân, nhân dân lao động, đồng thời giải phóng xã hội khỏi áp bức, bóc lột, bất công; xây dựng chủ nghĩa xã hội và chủ nghĩa cộng sản",
+            "Phát triển lực lượng sản xuất"
+        ],
+        answer: 2,
+        explanation: "Mục tiêu cao nhất là giải phóng giai cấp công nhân, nhân dân lao động và xã hội khỏi áp bức, bóc lột, bất công; xây dựng chủ nghĩa xã hội và chủ nghĩa cộng sản."
+    },
+    {
+        question: "Hoàn thành luận điểm: “Đảng Cộng sản ra đời là sản phẩm của sự kết hợp giữa chủ nghĩa Mác với ...”",
+        options: [
+            "Phong trào công nhân",
+            "Phong trào nông dân",
+            "Phong trào yêu nước",
+            "Phong trào dân chủ"
+        ],
+        answer: 0,
+        explanation: "Quy luật chung về sự ra đời của Đảng Cộng sản là sự kết hợp giữa chủ nghĩa Mác với phong trào công nhân. Lời giảng cũng lưu ý rằng ở mỗi quốc gia có thể có những điều kiện lịch sử khác nhau."
+    },
+    {
+        question: "Chọn cụm từ thích hợp để hoàn thành luận điểm: “Giai cấp công nhân là ... của Đảng Cộng sản, là nguồn bổ sung lực lượng phong phú cho Đảng Cộng sản.”",
+        options: ["Cơ sở chính trị", "Cơ sở giai cấp", "Cơ sở xã hội", "Cơ sở kinh tế"],
+        answer: 2,
+        explanation: "Giai cấp công nhân là cơ sở xã hội của Đảng Cộng sản, đồng thời là nguồn bổ sung lực lượng phong phú cho Đảng."
+    },
+    {
+        question: "Vì sao giai cấp công nhân là giai cấp có tinh thần cách mạng triệt để nhất?",
+        options: [
+            "Vì giai cấp công nhân có lợi ích cơ bản phù hợp với lợi ích của nhân dân lao động",
+            "Vì giai cấp công nhân là giai cấp đông đảo nhất trong xã hội",
+            "Vì cuộc cách mạng do giai cấp công nhân tiến hành nhằm xóa bỏ mâu thuẫn giai cấp trong xã hội tư bản chủ nghĩa",
+            "Vì giai cấp công nhân có lợi ích đối kháng trực tiếp với lợi ích của giai cấp tư sản"
+        ],
+        answer: 3,
+        explanation: "Giai cấp công nhân có tinh thần cách mạng triệt để nhất vì họ bị áp bức trực tiếp và có lợi ích đối kháng trực tiếp với lợi ích của giai cấp tư sản."
+    },
+    {
+        question: "Vì sao giai cấp công nhân là giai cấp tiên tiến nhất?",
+        options: [
+            "Vì giai cấp công nhân bị giai cấp tư sản áp bức, bóc lột nặng nề",
+            "Vì có số lượng đông đảo",
+            "Vì đại biểu cho lực lượng sản xuất hiện đại",
+            "Vì có hệ tư tưởng độc lập, tiên tiến và có Đảng lãnh đạo"
+        ],
+        answer: 2,
+        explanation: "Giai cấp công nhân là giai cấp tiên tiến vì đại biểu cho lực lượng sản xuất hiện đại và phương thức sản xuất tiên tiến, do họ là những người lao động trong nền công nghiệp."
+    },
+    {
+        question: "Giai cấp nào đại biểu cho quan hệ sản xuất chiếm hữu tư nhân tư bản chủ nghĩa?",
+        options: ["Giai cấp công nhân", "Giai cấp nông dân", "Giai cấp tư sản", "Tầng lớp trí thức"],
+        answer: 2,
+        explanation: "Giai cấp tư sản là đại biểu cho quan hệ sản xuất chiếm hữu tư nhân tư bản chủ nghĩa về tư liệu sản xuất. Lời giảng cũng lưu ý rằng phải là giai cấp, không phải tầng lớp, khi nói đến đại biểu cho một quan hệ sản xuất."
+    },
+    {
+        question: "Giai cấp công nhân Việt Nam ra đời trong hoàn cảnh lịch sử nào?",
+        options: [
+            "Sau khi Việt Nam trở thành nước tư bản chủ nghĩa",
+            "Trong thời kỳ Việt Nam độc lập",
+            "Sau Cách mạng Tháng Tám năm 1945",
+            "Trong cuộc khai thác thuộc địa của thực dân Pháp cuối thế kỷ XIX, đầu thế kỷ XX"
+        ],
+        answer: 3,
+        explanation: "Theo lời giảng, giai cấp công nhân Việt Nam ra đời trong cuộc khai thác thuộc địa của thực dân Pháp cuối thế kỷ XIX, đầu thế kỷ XX."
+    }
+];
+
+let answeredQuestions = new Set();
+let correctCount = 0;
+let wrongCount = 0;
+
+function initQuiz() {
+    const container = document.getElementById('quiz-container');
+    document.getElementById('total-count').innerText = quizData.length;
+    container.innerHTML = '';
+
+    quizData.forEach((item, qIndex) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q-${qIndex}`;
+
+        const labels = ['A', 'B', 'C', 'D'];
+        let optionsHtml = '';
+
+        item.options.forEach((opt, oIndex) => {
+            optionsHtml += `
+                <button class="option-btn" onclick="checkAnswer(${qIndex}, ${oIndex})">
+                    <strong>${labels[oIndex]}.</strong> ${opt}
+                </button>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="question-title">Câu ${qIndex + 1}: ${item.question}</div>
+            <div class="options">${optionsHtml}</div>
+            <div class="explanation" id="exp-${qIndex}">
+                <strong>Đáp án đúng: ${labels[item.answer]}</strong><br>
+                <strong>Giải thích:</strong> ${item.explanation}
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function checkAnswer(qIndex, selectedOption) {
+    if (answeredQuestions.has(qIndex)) return;
+
+    answeredQuestions.add(qIndex);
+    const qData = quizData[qIndex];
+    const card = document.getElementById(`q-${qIndex}`);
+    const btns = card.querySelectorAll('.option-btn');
+    const exp = document.getElementById(`exp-${qIndex}`);
+
+    btns.forEach(btn => btn.disabled = true);
+
+    if (selectedOption === qData.answer) {
+        btns[selectedOption].classList.add('correct');
+        correctCount++;
+    } else {
+        btns[selectedOption].classList.add('wrong');
+        btns[qData.answer].classList.add('correct');
+        wrongCount++;
+    }
+
+    exp.style.display = 'block';
+
+    // Cập nhật điểm số
+    document.getElementById('answered-count').innerText = answeredQuestions.size;
+    document.getElementById('correct-count').innerText = correctCount;
+    document.getElementById('wrong-count').innerText = wrongCount;
+}
+
+function resetQuiz() {
+    answeredQuestions.clear();
+    correctCount = 0;
+    wrongCount = 0;
+    document.getElementById('answered-count').innerText = '0';
+    document.getElementById('correct-count').innerText = '0';
+    document.getElementById('wrong-count').innerText = '0';
+    initQuiz();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Khởi chạy khi tải trang
+window.onload = initQuiz;
+</script>
+
+</body>
+</html>

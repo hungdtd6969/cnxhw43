@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Trắc Nghiệm Chủ Nghĩa Xã Hội Khoa Học</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --primary-hover: #1e40af;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --correct-bg: #dcfce7;
+            --correct-border: #16a34a;
+            --correct-text: #15803d;
+            --wrong-bg: #fee2e2;
+            --wrong-border: #dc2626;
+            --wrong-text: #b91c1c;
+            --border-color: #e2e8f0;
+            --explanation-bg: #f0f9ff;
+            --explanation-border: #0284c7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 24px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .section-title {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 30px 0 20px 0;
+            border-left: 5px solid #0284c7;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            background-color: #fff;
+        }
+
+        .option-item:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .option-prefix {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 24px;
+        }
+
+        /* Classes phản hồi khi người dùng chọn */
+        .option-item.correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct-border) !important;
+            color: var(--correct-text) !important;
+            font-weight: bold;
+        }
+
+        .option-item.wrong {
+            background-color: var(--wrong-bg) !important;
+            border-color: var(--wrong-border) !important;
+            color: var(--wrong-text) !important;
+        }
+
+        .option-item.disabled {
+            pointer-events: none;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 16px;
+            background-color: var(--explanation-bg);
+            border-left: 4px solid var(--explanation-border);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #0c4a6e;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>TÀI LIỆU ÔN TẬP CHỦ NGHĨA XÃ HỘI KHOA HỌC</h1>
+        <p>Bộ câu hỏi trắc nghiệm tự luyện — Nhấp vào đáp án để xem kết quả & giải thích</p>
+    </header>
+
+    <div id="quiz-container">
+        <!-- Nội dung câu hỏi sẽ được render tự động qua JavaScript -->
+    </div>
+
+    <footer>
+        <p>© Hệ thống ôn tập trắc nghiệm tự động — Đã tích hợp đầy đủ đáp án & giải thích</p>
+    </footer>
+</div>
+
+<script>
+    const quizData = [
+        // --- PHẦN 1: CHƯƠNG 5 ---
+        {
+            section: "Chương 5: Cơ cấu xã hội - giai cấp và liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên CNXH (Phần 2 & 3)",
+            questions: [
+                {
+                    id: "C5_Q5",
+                    question: "Câu 5. Liên minh giữa giai cấp công nhân với giai cấp nông dân và tầng lớp trí thức trong thời kỳ quá độ lên chủ nghĩa xã hội biểu hiện trên lĩnh vực CHÍNH TRỊ là gì?",
+                    options: [
+                        "A. Đoàn kết hợp tác để xây dựng hệ thống chính trị xã hội chủ nghĩa, xây dựng nền dân chủ xã hội chủ nghĩa",
+                        "B. Đoàn kết hợp tác để xây dựng nền kinh tế thị trường...",
+                        "C. Đoàn kết hợp tác để xây dựng nền văn hóa tiên tiến...",
+                        "D. Đoàn kết hợp tác để cùng lao động sản xuất, xây dựng quan hệ sản xuất mới..."
+                    ],
+                    correct: 0,
+                    explanation: "Trên lĩnh vực chính trị, nội dung liên minh thể hiện rõ qua việc cùng nhau tham gia xây dựng hệ thống chính trị vững mạnh, củng cố nhà nước và phát huy quyền làm chủ (dân chủ XHCN) của nhân dân."
+                },
+                {
+                    id: "C5_Q6",
+                    question: "Câu 6. Vì sao liên minh giữa giai cấp công nhân với giai cấp nông dân và tầng lớp trí thức là liên minh đặc biệt?",
+                    options: [
+                        "A. Vì trong liên minh đó, các lực lượng không chia nhau quyền lãnh đạo mà nằm dưới sự lãnh đạo duy nhất của một giai cấp tiên tiến là giai cấp công nhân",
+                        "B. Vì trong liên minh đó, các giai cấp chia nhau quyền lãnh đạo...",
+                        "C. Vì các lực lượng sẽ có thu nhập và mức sống như nhau...",
+                        "D. Vì các lực lượng sẽ được quan tâm đặc biệt..."
+                    ],
+                    correct: 0,
+                    explanation: "Đây là liên minh trong xã hội có giai cấp, do đó nó mang tính đặc biệt ở chỗ không phải là sự chia sẻ quyền lực bình quân, mà đặt dưới sự lãnh đạo thống nhất của giai cấp tiên tiến nhất - giai cấp công nhân."
+                },
+                {
+                    id: "C5_Q7",
+                    question: "Câu 7. Liên minh giữa giai cấp công nhân, giai cấp nông dân và tầng lớp trí thức trong thời kỳ quá độ lên chủ nghĩa xã hội nhằm mục đích kinh tế cốt lõi là gì?",
+                    options: [
+                        "A. Cùng nhau xây dựng quan hệ sản xuất mới - quan hệ sản xuất xã hội chủ nghĩa",
+                        "B. Cùng nhau xây dựng đường lối phát triển kinh tế đúng đắn",
+                        "C. Cùng nhau phát triển sản xuất hàng hóa ngày càng hiện đại",
+                        "D. Cùng nhau xây dựng nguyên tắc phân phối mới"
+                    ],
+                    correct: 0,
+                    explanation: "Về mặt kinh tế, mục tiêu quan trọng nhất của khối liên minh là hợp tác để cải tạo và xây dựng thành công quan hệ sản xuất xã hội chủ nghĩa dựa trên chế độ công hữu."
+                },
+                {
+                    id: "C5_Q8",
+                    question: "Câu 8. Theo quan điểm của chủ nghĩa Mác - Lênin, một trong những nguyên tắc cơ bản để xây dựng khối liên minh trong cách mạng xã hội chủ nghĩa là:",
+                    options: [
+                        "A. Đề cao lợi ích của giai cấp công nhân",
+                        "B. Đề cao lợi ích của giai cấp nông dân",
+                        "C. Kết hợp đúng đắn các lợi ích của các giai cấp, tầng lớp trong xã hội",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 2,
+                    explanation: "Việc đảm bảo và kết hợp hài hòa, đúng đắn các lợi ích kinh tế - chính trị giữa các bên tham gia liên minh là nguyên tắc sống còn để duy trì khối đoàn kết."
+                },
+                {
+                    id: "C5_Q9",
+                    question: "Câu 9. Theo quan điểm của chủ nghĩa Mác - Lênin, các nguyên tắc cơ bản trong xây dựng khối liên minh giai cấp bao gồm:",
+                    options: [
+                        "A. Phải đảm bảo vai trò lãnh đạo của giai cấp công nhân",
+                        "B. Phải đảm bảo nguyên tắc tự nguyện",
+                        "C. Kết hợp đúng đắn các lợi ích",
+                        "D. Cả A, B, C đều đúng"
+                    ],
+                    correct: 3,
+                    explanation: "Ba nguyên tắc nền tảng và bất dịch để xây dựng khối liên minh công - nông - trí thức thành công chính là: 1) Đảm bảo vai trò lãnh đạo của giai cấp công nhân, 2) Đảm bảo tính tự nguyện, và 3) Kết hợp đúng đắn các lợi ích."
+                },
+                {
+                    id: "C5_Q10",
+                    question: "Câu 10. Một trong những nguyên tắc để tăng cường khối liên minh giữa giai cấp công nhân, giai cấp nông dân và tầng lớp trí thức là:",
+                    options: [
+                        "A. Lợi ích của các giai cấp, tầng lớp trong liên minh đó luôn được đảm bảo",
+                        "B. Các giai cấp, tầng lớp trong liên minh đều là lực lượng lao động...",
+                        "C. Các giai cấp, tầng lớp đều cùng là lực lượng yếu thế...",
+                        "D. Các giai cấp, tầng lớp đều được giáo dục..."
+                    ],
+                    correct: 0,
+                    explanation: "Để khối liên minh ngày càng vững mạnh và bền chặt, điều kiện tiên quyết là lợi ích thiết thực của mọi tầng lớp tham gia phải luôn được quan tâm và đảm bảo."
+                },
+                {
+                    id: "C5_P3_Q1",
+                    question: "Câu 1. Giai cấp công nhân Việt Nam trong thời kỳ quá độ lên chủ nghĩa xã hội biến đổi theo xu hướng nào?",
+                    options: [
+                        "A. Xu hướng trí thức hóa và trí tuệ hóa",
+                        "B. Xu hướng nông dân hóa",
+                        "C. Xu hướng dân tộc hóa",
+                        "D. Xu hướng khu vực hóa"
+                    ],
+                    correct: 0,
+                    explanation: "Dưới tác động của Cách mạng công nghiệp và quá trình công nghiệp hóa, hiện đại hóa, cơ cấu của giai cấp công nhân Việt Nam biến đổi theo xu hướng trí thức hóa, ngày càng nâng cao về trình độ chuyên môn, kỹ thuật và học vấn."
+                },
+                {
+                    id: "C5_P3_Q2",
+                    question: "Câu 2. Xu hướng biến đổi của giai cấp nông dân Việt Nam trong thời kỳ quá độ lên chủ nghĩa xã hội là gì?",
+                    options: [
+                        "A. Giai cấp nông dân chuyển sang sản xuất hàng hóa",
+                        "B. Giai cấp nông dân trở thành giai cấp giữ vai trò lãnh đạo xã hội",
+                        "C. Giai cấp nông dân trở thành một bộ phận của giai cấp công nhân",
+                        "D. Giai cấp nông dân trở thành giai cấp thống trị xã hội"
+                    ],
+                    correct: 2,
+                    explanation: "Trong quá trình công nghiệp hóa nông nghiệp, nông thôn, một bộ phận nông dân thay đổi phương thức sản xuất, lao động và được tuyển mộ vào khu vực công nghiệp, qua đó chuyển hóa thành một bộ phận của giai cấp công nhân."
+                },
+                {
+                    id: "C5_P3_Q3",
+                    question: "Câu 3. Hoàn thành nhận định sau: \"Đội ngũ doanh nhân Việt Nam hiện nay là...\"",
+                    options: [
+                        "A. Sản phẩm của thời kỳ đổi mới ở Việt Nam",
+                        "B. Sản phẩm của cuộc cách mạng giải phóng dân tộc ở Việt Nam",
+                        "C. Lực lượng khởi xướng thời kỳ đổi mới ở Việt Nam",
+                        "D. Lực lượng lãnh đạo thời kỳ đổi mới ở Việt Nam"
+                    ],
+                    correct: 0,
+                    explanation: "Đội ngũ doanh nhân là tầng lớp xã hội mới hình thành và phát triển mạnh mẽ từ khi Đảng ta tiến hành công cuộc Đổi mới (1986), mở cửa nền kinh tế và phát triển kinh tế nhiều thành phần."
+                },
+                {
+                    id: "C5_P3_Q4",
+                    question: "Câu 4. Điền vào chỗ trống để hoàn thiện luận điểm của Đảng Cộng sản Việt Nam: \"Tăng cường khối đại đoàn kết toàn dân tộc trên [...] liên minh giai cấp công nhân với giai cấp nông dân và đội ngũ trí thức do Đảng lãnh đạo\".",
+                    options: [
+                        "A. Nền tảng",
+                        "B. Cơ sở",
+                        "C. Động lực",
+                        "D. Mục tiêu"
+                    ],
+                    correct: 0,
+                    explanation: "Khối liên minh công - nông - trí thức được Đảng ta xác định đóng vai trò là \"nền tảng\" vững chắc cho khối đại đoàn kết toàn dân tộc."
+                },
+                {
+                    id: "C5_P3_Q5",
+                    question: "Câu 5. Vì sao Đảng Cộng sản Việt Nam giữ vai trò lãnh đạo khối liên minh giai cấp công nhân với giai cấp nông dân và đội ngũ trí thức ở Việt Nam?",
+                    options: [
+                        "A. Vì Đảng Cộng sản Việt Nam là đại diện cho lợi ích của giai cấp công nhân, giai cấp nông dân và đội ngũ trí thức",
+                        "B. Vì Đảng có đường lối chủ trương đúng đắn...",
+                        "C. Vì Đảng bao gồm đại diện của các giai cấp...",
+                        "D. Vì Đảng là tổ chức chính trị rộng rãi nhất..."
+                    ],
+                    correct: 0,
+                    explanation: "Đảng Cộng sản là đội tiên phong của giai cấp công nhân, đồng thời đại diện trung thành cho lợi ích không chỉ của riêng giai cấp công nhân mà còn của nông dân, trí thức và toàn thể dân tộc lao động."
+                },
+                {
+                    id: "C5_P3_Q6",
+                    question: "Câu 6. Theo quan điểm của chủ nghĩa Mác - Lênin, động lực của cuộc cách mạng xã hội chủ nghĩa là gì?",
+                    options: [
+                        "A. Giai cấp nông dân và giai cấp tư sản",
+                        "B. Giai cấp công nhân và giai cấp nông dân",
+                        "C. Giai cấp công nhân và giai cấp địa chủ",
+                        "D. Giai cấp công nhân và tầng lớp trí thức"
+                    ],
+                    correct: 1,
+                    explanation: "Trong cách mạng xã hội chủ nghĩa, lực lượng nòng cốt và động lực to lớn nhất để xây dựng xã hội mới chính là khối liên minh giữa giai cấp công nhân và giai cấp nông dân (do giai cấp công nhân lãnh đạo)."
+                },
+                {
+                    id: "C5_P3_Q7",
+                    question: "Câu 7. Theo quan điểm của chủ nghĩa Mác - Lênin, liên minh công - nông và các tầng lớp lao động khác trong cách mạng xã hội chủ nghĩa bắt nguồn từ:",
+                    options: [
+                        "A. Ý muốn chủ quan của giai cấp công nhân",
+                        "B. Ý muốn chủ quan của giai cấp nông dân",
+                        "C. Tính tất yếu khách quan của cách mạng xã hội chủ nghĩa",
+                        "D. Cả A và B"
+                    ],
+                    correct: 2,
+                    explanation: "Khối liên minh này không hình thành do ý muốn ngẫu nhiên hay chủ quan, mà là một yêu cầu mang tính quy luật, tính tất yếu khách quan của tiến trình cách mạng xã hội chủ nghĩa."
+                },
+                {
+                    id: "C5_P3_Q8",
+                    question: "Câu 8. Theo quan điểm của chủ nghĩa Mác - Lênin, cơ sở khách quan của liên minh giữa giai cấp công nhân với giai cấp nông dân và các tầng lớp lao động khác là:",
+                    options: [
+                        "A. Họ đều là những người lao động, đều bị áp bức bóc lột",
+                        "B. Sự liên kết khách quan giữa công nghiệp, nông nghiệp và các ngành nghề khác",
+                        "C. Liên minh là lực lượng chính trị to lớn trong xây dựng, bảo vệ chính quyền nhà nước",
+                        "D. Cả A, B, C đều đúng"
+                    ],
+                    correct: 3,
+                    explanation: "Cơ sở khách quan của liên minh bao hàm cả sự tương đồng về vị trí người lao động bị bóc lột, sự gắn kết tất yếu giữa các ngành kinh tế (công - nông nghiệp) và sức mạnh chính trị to lớn của khối đại đoàn kết."
+                },
+                {
+                    id: "C5_P3_Q9",
+                    question: "Câu 9. Theo quan điểm của chủ nghĩa Mác - Lênin, nội dung liên minh giữa giai cấp công nhân với giai cấp nông dân và các tầng lớp lao động khác được thể hiện trên những lĩnh vực nào?",
+                    options: [
+                        "A. Chính trị",
+                        "B. Kinh tế",
+                        "C. Tư tưởng - văn hóa",
+                        "D. Cả A, B, C đều đúng"
+                    ],
+                    correct: 3,
+                    explanation: "Để xây dựng thành công chủ nghĩa xã hội, nội dung liên minh phải được triển khai một cách toàn diện trên tất cả các lĩnh vực cốt lõi của đời sống xã hội: kinh tế, chính trị, tư tưởng - văn hóa."
+                },
+                {
+                    id: "C5_P3_Q10",
+                    question: "Câu 10. Khi tiến hành xây dựng chủ nghĩa xã hội ở nước Nga, V.I. Lênin quan tâm xây dựng khối liên minh giữa giai cấp công nhân với giai cấp nông dân và:",
+                    options: [
+                        "A. Tầng lớp trí thức",
+                        "B. Giai cấp tư sản",
+                        "C. Giai cấp tiểu tư sản",
+                        "D. Tầng lớp tiểu chủ"
+                    ],
+                    correct: 0,
+                    explanation: "Trong tiến trình xây dựng nhà nước Xô viết, Lênin đặc biệt nhấn mạnh tầm quan trọng và sự cần thiết phải thiết lập khối liên minh vững chắc giữa giai cấp công nhân, nông dân với tầng lớp trí thức."
+                }
+            ]
+        },
+        // --- PHẦN 2: CHƯƠNG 6 (DÂN TỘC) ---
+        {
+            section: "Chương 6: Vấn đề dân tộc trong thời kỳ quá độ lên chủ nghĩa xã hội",
+            questions: [
+                {
+                    id: "C6_P1_Q1",
+                    question: "Câu 1. Một trong những nguyên nhân dẫn đến xu hướng liên hiệp dân tộc là:",
+                    options: [
+                        "A. Sự phát triển của lực lượng sản xuất và khoa học công nghệ, nhu cầu liên minh về kinh tế, văn hóa, chính trị, quân sự",
+                        "B. Nhu cầu giao lưu về kinh tế, văn hóa, chính trị giữa giai cấp tư sản với giai cấp vô sản",
+                        "C. Nhu cầu giải quyết mâu thuẫn về kinh tế, văn hóa, chính trị, quân sự giữa các giai cấp, tầng lớp trong xã hội",
+                        "D. Nhu cầu thống nhất về lợi ích kinh tế, chính trị, văn hóa, xã hội về tay giai cấp tư sản"
+                    ],
+                    correct: 0,
+                    explanation: "Sự phát triển mạnh mẽ của lực lượng sản xuất, khoa học kỹ thuật trong nền đại công nghiệp cùng nhu cầu mở rộng thị trường, hợp tác kinh tế, chính trị, quân sự giữa các dân tộc là nguyên nhân khách quan dẫn đến xu hướng liên hiệp dân tộc."
+                },
+                {
+                    id: "C6_P1_Q2",
+                    question: "Câu 2. Chỉ ra luận điểm KHÔNG CHÍNH XÁC:",
+                    options: [
+                        "A. Quyền bình đẳng dân tộc là cơ sở cho quyền tự quyết dân tộc",
+                        "B. Quyền tự quyết dân tộc là ảo tưởng đối với các dân tộc kém phát triển",
+                        "C. Quyền bình đẳng và quyền tự quyết dân tộc không tự nhiên mà có được",
+                        "D. Quyền bình đẳng và quyền tự quyết dân tộc đi liền với nhau"
+                    ],
+                    correct: 1,
+                    explanation: "Nhận định \"quyền tự quyết dân tộc là ảo tưởng đối với các dân tộc kém phát triển\" là hoàn toàn sai trái. Trong quan điểm Mác - Lênin, quyền tự quyết áp dụng cho tất cả các dân tộc (cả các dân tộc nhỏ, kém phát triển) nhằm thoát khỏi ách áp bức, nô dịch."
+                },
+                {
+                    id: "C6_P1_Q3",
+                    question: "Câu 3. Yếu tố nào quyết định đến việc thực hiện quyền bình đẳng dân tộc?",
+                    options: [
+                        "A. Xóa bỏ tình trạng chênh lệch trong sự phát triển kinh tế, văn hóa của các dân tộc",
+                        "B. Xóa bỏ tình trạng giai cấp này áp bức giai cấp khác trên cơ sở xóa bỏ chế độ tư hữu",
+                        "C. Các nhà nước dân tộc có chủ trương, chính sách đúng đắn trong giải quyết quan hệ dân tộc",
+                        "D. Các bản chính trị có đường lối đúng đắn định hướng quan hệ dân tộc"
+                    ],
+                    correct: 1,
+                    explanation: "Nguyên nhân sâu xa của áp bức dân tộc thực chất bắt nguồn từ áp bức giai cấp và chế độ tư hữu tư bản chủ nghĩa. Do đó, muốn thực hiện triệt để quyền bình đẳng dân tộc, phải xóa bỏ chế độ tư hữu và tình trạng bóc lột giai cấp."
+                },
+                {
+                    id: "C6_P1_Q4",
+                    question: "Câu 4. Nội dung nào KHÔNG THUỘC Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin?",
+                    options: [
+                        "A. Các dân tộc có quyền bình đẳng",
+                        "B. Các dân tộc có quyền tự quyết",
+                        "C. Liên hiệp tất cả các dân tộc",
+                        "D. Liên hiệp công nhân tất cả các dân tộc"
+                    ],
+                    correct: 2,
+                    explanation: "Cương lĩnh dân tộc chỉ gồm 3 nội dung kinh điển: 1) Các dân tộc hoàn toàn bình đẳng, 2) Các dân tộc được quyền tự quyết, và 3) Liên hiệp công nhân của tất cả các dân tộc (không phải liên hiệp tất cả các dân tộc chung chung không phân biệt giai cấp)."
+                },
+                {
+                    id: "C6_P1_Q5",
+                    question: "Câu 5. Nội dung nào là QUAN TRỌNG NHẤT trong Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin?",
+                    options: [
+                        "A. Các dân tộc bị áp bức đoàn kết lại",
+                        "B. Các dân tộc hoàn toàn bình đẳng",
+                        "C. Liên hiệp công nhân tất cả các dân tộc",
+                        "D. Các dân tộc được quyền tự quyết"
+                    ],
+                    correct: 2,
+                    explanation: "Trong 3 nội dung của Cương lĩnh, nguyên tắc \"Liên hiệp công nhân tất cả các dân tộc\" là nguyên tắc cốt lõi, quan trọng nhất, đóng vai trò là điều kiện tiên quyết để thực hiện thành công hai nguyên tắc còn lại."
+                },
+                {
+                    id: "C6_P1_Q6",
+                    question: "Câu 6. V.I. Lênin chủ trương liên hiệp giai cấp công nhân các dân tộc trên cơ sở nào?",
+                    options: [
+                        "A. Lợi ích của giai cấp công nhân các dân tộc",
+                        "B. Sự ra đời của giai cấp công nhân các dân tộc",
+                        "C. Nguồn gốc xã hội của giai cấp công nhân các dân tộc",
+                        "D. Ý thức đoàn kết của giai cấp công nhân các dân tộc"
+                    ],
+                    correct: 0,
+                    explanation: "Sự đồng điệu và thống nhất về mặt lợi ích cốt lõi của giai cấp công nhân toàn cầu là cơ sở vững chắc nhất để Lênin chủ trương thực hiện sự liên hiệp quốc tế này."
+                },
+                {
+                    id: "C6_P1_Q7",
+                    question: "Câu 7. Trong chủ nghĩa xã hội, quan hệ dân tộc có xu hướng phát triển như thế nào?",
+                    options: [
+                        "A. Ngày càng bình đẳng",
+                        "B. Ngày càng mất bình đẳng",
+                        "C. Xung đột giữa các dân tộc đan xen",
+                        "D. Khác biệt giữa các dân tộc sẽ bị triệt tiêu hoàn toàn"
+                    ],
+                    correct: 0,
+                    explanation: "Dưới chế độ xã hội chủ nghĩa, khi chế độ người bóc lột người bị xóa bỏ, quan hệ giữa các dân tộc sẽ phát triển theo xu hướng xích lại gần nhau, tăng cường sự tin tưởng và ngày càng trở nên bình đẳng, gắn bó khăng khít."
+                },
+                {
+                    id: "C6_P1_Q8",
+                    question: "Câu 8. Một trong những nguyên tắc cơ bản của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề dân tộc là các dân tộc:",
+                    options: [
+                        "A. Hoàn toàn bình đẳng",
+                        "B. Mâu thuẫn với nhau",
+                        "C. Lệ thuộc vào nhau",
+                        "D. Tách ra thành lập quốc gia dân tộc độc lập"
+                    ],
+                    correct: 0,
+                    explanation: "Nguyên tắc đầu tiên và bất dịch trong Cương lĩnh dân tộc là quyền bình đẳng tuyệt đối giữa các dân tộc, không phân biệt lớn nhỏ, trình độ phát triển."
+                },
+                {
+                    id: "C6_P1_Q9",
+                    question: "Câu 9. Quyền tự do phân lập thành cộng đồng quốc gia dân tộc độc lập là một trong những nội dung của nguyên tắc nào trong Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin?",
+                    options: [
+                        "A. Các dân tộc hoàn toàn bình đẳng",
+                        "B. Các dân tộc được quyền tự quyết",
+                        "C. Liên hiệp công nhân tất cả các dân tộc",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 1,
+                    explanation: "Quyền tự quyết dân tộc bao gồm hai mặt biện chứng: quyền tự do tách ra lập quốc gia độc lập (phân lập) và quyền tự nguyện liên hiệp với các dân tộc khác."
+                },
+                {
+                    id: "C6_P1_Q10",
+                    question: "Câu 10. Quyền tự quyết về con đường phát triển về kinh tế, chính trị, xã hội là một trong những nội dung của nguyên tắc nào trong Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin?",
+                    options: [
+                        "A. Các dân tộc hoàn toàn bình đẳng",
+                        "B. Các dân tộc được quyền tự quyết",
+                        "C. Liên hiệp công nhân tất cả các dân tộc",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 1,
+                    explanation: "Tự quyết định thể chế chính trị, lựa chọn con đường phát triển kinh tế - xã hội chính là nội dung cốt lõi của nguyên tắc quyền dân tộc tự quyết."
+                },
+                {
+                    id: "C6_DT_Q1",
+                    question: "Câu 1. Dân tộc là gì?",
+                    options: [
+                        "A. Là một hình thức cộng đồng người ra đời trên cơ sở quan hệ huyết thống",
+                        "B. Là hình thức cộng đồng người ra đời trên cơ sở của quan hệ hôn nhân",
+                        "C. Là hình thức cộng đồng người ra đời trên cơ sở quan hệ lãnh thổ, kinh tế, văn hóa và chính trị",
+                        "D. Là hình thức cộng đồng người ra đời trên cơ sở quan hệ hòa bình hữu nghị giữa người với người"
+                    ],
+                    correct: 2,
+                    explanation: "Theo quan điểm của chủ nghĩa Mác - Lênin, dân tộc (quốc gia - dân tộc) là hình thức cộng đồng người ổn định được hình thành trong lịch sử, trên cơ sở chung về lãnh thổ, kinh tế, ngôn ngữ, văn hóa và cấu trúc chính trị."
+                },
+                {
+                    id: "C6_DT_Q2",
+                    question: "Câu 2. Hình thức cộng đồng người nào ra đời TRƯỚC cộng đồng dân tộc?",
+                    options: [
+                        "A. Thị tộc",
+                        "B. Thân tộc",
+                        "C. Huynh đệ",
+                        "D. Trưởng tộc"
+                    ],
+                    correct: 0,
+                    explanation: "Các hình thức cộng đồng người trong lịch sử phát triển từ thấp đến cao gồm: Thị tộc → Bộ lạc → Bộ tộc → Dân tộc. Trong đó, thị tộc là hình thức cộng đồng người xuất hiện sớm nhất."
+                },
+                {
+                    id: "C6_DT_Q3",
+                    question: "Câu 3. Thị tộc là hình thức cộng đồng người xuất hiện trong thời đại nào?",
+                    options: [
+                        "A. Trong xã hội cộng sản nguyên thủy",
+                        "B. Trong xã hội chiếm hữu nô lệ",
+                        "C. Trong xã hội phong kiến",
+                        "D. Trong xã hội tư bản chủ nghĩa"
+                    ],
+                    correct: 0,
+                    explanation: "Thị tộc là hình thức cộng đồng người gắn liền với giai đoạn đầu tiên của lịch sử nhân loại - thời đại cộng sản nguyên thủy, dựa trên cơ sở quan hệ huyết thống ruột thịt."
+                },
+                {
+                    id: "C6_DT_Q4",
+                    question: "Câu 4. Đặc trưng nào KHÔNG THUỘC về đặc trưng của dân tộc theo nghĩa \"tộc người\"?",
+                    options: [
+                        "A. Cộng đồng về ngôn ngữ",
+                        "B. Có lãnh thổ chung",
+                        "C. Các đặc điểm chung thuộc về bản sắc văn hóa",
+                        "D. Ý thức tự giác tộc người"
+                    ],
+                    correct: 1,
+                    explanation: "\"Có lãnh thổ chung ổn định\" là đặc trưng của quốc gia - dân tộc. Dân tộc theo nghĩa tộc người (ethnic group) thì không nhất thiết phải có lãnh thổ chung biệt lập."
+                },
+                {
+                    id: "C6_DT_Q5",
+                    question: "Câu 5. Tiêu chí cơ bản nào để phân biệt sự khác nhau giữa các dân tộc - tộc người?",
+                    options: [
+                        "A. Địa bàn cư trú của dân tộc",
+                        "B. Trình độ phát triển của dân tộc",
+                        "C. Bản sắc văn hóa của dân tộc",
+                        "D. Chế độ chính trị của dân tộc"
+                    ],
+                    correct: 2,
+                    explanation: "Tiêu chí quan trọng nhất, mang tính nhận diện cao nhất để phân biệt giữa các tộc người chính là bản sắc văn hóa, ngôn ngữ và ý thức tự giác tộc người."
+                },
+                {
+                    id: "C6_DT_Q6",
+                    question: "Câu 6. Sự khác nhau giữa dân tộc (quốc gia) với dân tộc (tộc người) biểu hiện chủ yếu ở yếu tố nào?",
+                    options: [
+                        "A. Lãnh thổ",
+                        "B. Kinh tế",
+                        "C. Văn hóa",
+                        "D. Xã hội"
+                    ],
+                    correct: 0,
+                    explanation: "Yếu tố khác biệt căn bản và rõ nét nhất giữa quốc gia - dân tộc và tộc người chính là yếu tố lãnh thổ (quốc gia - dân tộc bắt buộc phải có lãnh thổ chung thống nhất)."
+                },
+                {
+                    id: "C6_DT_Q7",
+                    question: "Câu 7. Trong sự phát triển của chủ nghĩa tư bản, sự phát triển của dân tộc diễn ra theo xu hướng nào?",
+                    options: [
+                        "A. Xu hướng độc lập dân tộc và liên hiệp dân tộc",
+                        "B. Xu hướng bình đẳng và đoàn kết tất cả các dân tộc",
+                        "C. Xu hướng tôn trọng lợi ích của tất cả các dân tộc",
+                        "D. Xu hướng đáp ứng mọi nhu cầu dân tộc"
+                    ],
+                    correct: 0,
+                    explanation: "Theo V.I. Lênin, trong quá trình phát triển của chủ nghĩa tư bản, phong trào vận động của các dân tộc tuân theo 2 xu hướng: 1) Xu hướng tách ra thành lập quốc gia độc lập và 2) Xu hướng xích lại gần nhau, liên hiệp các dân tộc."
+                },
+                {
+                    id: "C6_DT_Q8",
+                    question: "Câu 8. Một trong những xu hướng phát triển của dân tộc là các cộng đồng dân cư:",
+                    options: [
+                        "A. Có quyền tự quyết",
+                        "B. Tách ra thành lập quốc gia dân tộc độc lập",
+                        "C. Có quyền bình đẳng",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 1,
+                    explanation: "Đây chính là nội dung mô tả xu hướng khách quan thứ nhất của sự phát triển dân tộc (xu hướng tách ra, lập quốc gia độc lập nhằm thoát khỏi ách áp bức)."
+                },
+                {
+                    id: "C6_DT_Q9",
+                    question: "Câu 9. Một trong những xu hướng phát triển của dân tộc là các dân tộc:",
+                    options: [
+                        "A. Có quyền bình đẳng",
+                        "B. Có quyền tự quyết",
+                        "C. Liên hiệp trong từng quốc gia và giữa các quốc gia với nhau",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 2,
+                    explanation: "Đây là nội dung mô tả xu hướng khách quan thứ hai: xu hướng các dân tộc xích lại gần nhau, phá vỡ hàng rào ngăn cách để liên hiệp lại trong một quốc gia hoặc giữa các quốc gia với nhau."
+                },
+                {
+                    id: "C6_DT_Q10",
+                    question: "Câu 10. Chọn phương án đúng nhất. Các nguyên tắc cơ bản của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề dân tộc là:",
+                    options: [
+                        "A. Các dân tộc hoàn toàn bình đẳng",
+                        "B. Các dân tộc được quyền tự quyết",
+                        "C. Liên hiệp công nhân của tất cả các dân tộc",
+                        "D. Cả A, B, C đều đúng"
+                    ],
+                    correct: 3,
+                    explanation: "Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin bao gồm trọn vẹn cả 3 nguyên tắc nền tảng này để giải quyết triệt để vấn đề dân tộc trong mọi thời kỳ cách mạng."
+                },
+                {
+                    id: "C6_VN_Q1",
+                    question: "Câu 1. Chỉ ra luận điểm KHÔNG CHÍNH XÁC:",
+                    options: [
+                        "A. Liên hiệp giai cấp công nhân các dân tộc là nội dung quan trọng nhất trong Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin bởi nó là giải pháp hữu hiệu để thực hiện quyền bình đẳng và quyền tự quyết dân tộc",
+                        "B. Liên hiệp giai cấp công nhân các dân tộc là nội dung quan trọng nhất trong Cương lĩnh dân tộc bởi nó là hạt nhân đoàn kết các lực lượng cách mạng trong đấu tranh chống áp bức bóc lột",
+                        "C. Liên hiệp giai cấp công nhân các dân tộc là nội dung quan trọng nhất trong Cương lĩnh dân tộc bởi nó thể hiện rõ lập trường của giai cấp công nhân trong giải quyết quan hệ dân tộc",
+                        "D. Liên hiệp giai cấp công nhân các dân tộc là nội dung quan trọng nhất trong Cương lĩnh dân tộc bởi nó thể hiện rõ xu thế toàn cầu hóa và khu vực hóa trong vấn đề dân tộc"
+                    ],
+                    correct: 3,
+                    explanation: "Luận điểm D sai vì gán ghép vấn đề này với xu thế toàn cầu hóa và khu vực hóa hiện đại (v vốn không phải là cơ sở lý luận gốc của Cương lĩnh Mác - Lênin thế kỷ XIX)."
+                },
+                {
+                    id: "C6_VN_Q2",
+                    question: "Câu 2. Theo Chủ tịch Hồ Chí Minh, con đường để đấu tranh cho độc lập, tự do, chủ quyền của dân tộc Việt Nam là gì?",
+                    options: [
+                        "A. Cách mạng phong kiến",
+                        "B. Cách mạng tư sản",
+                        "C. Cách mạng vô sản",
+                        "D. Cách mạng nông dân"
+                    ],
+                    correct: 2,
+                    explanation: "Chủ tịch Hồ Chí Minh đã khẳng định một chân lý lịch sử: \"Muốn cứu nước và giải phóng dân tộc, không có con đường nào khác con đường cách mạng vô sản\"."
+                },
+                {
+                    id: "C6_VN_Q3",
+                    question: "Câu 3. Điền từ vào chỗ trống để hoàn thiện đặc trưng của mô hình chủ nghĩa xã hội ở Việt Nam: \"Các [...] trong cộng đồng Việt Nam bình đẳng, đoàn kết, tôn trọng và giúp nhau cùng phát triển\".",
+                    options: [
+                        "A. Tổ chức",
+                        "B. Gia đình",
+                        "C. Tôn giáo",
+                        "D. Dân tộc"
+                    ],
+                    correct: 3,
+                    explanation: "Đây là câu nói quen thuộc khẳng định chính sách đại đoàn kết dân tộc nhất quán của Đảng và Nhà nước ta: \"Các dân tộc trong cộng đồng Việt Nam bình đẳng, đoàn kết, tôn trọng và giúp nhau cùng phát triển\"."
+                },
+                {
+                    id: "C6_VN_Q4",
+                    question: "Câu 4. Đặc điểm chủ yếu của các dân tộc trong quốc gia Việt Nam là gì?",
+                    options: [
+                        "A. Mỗi dân tộc có bản sắc văn hóa riêng, góp phần tạo nên sự phong phú, đa dạng của nền văn hóa Việt Nam thống nhất",
+                        "B. Mỗi dân tộc đều có khu vực lãnh thổ riêng biệt, độc lập",
+                        "C. Mỗi dân tộc đều có chế độ chính trị riêng",
+                        "D. Mỗi dân tộc đều có nhà nước riêng"
+                    ],
+                    correct: 0,
+                    explanation: "Nước ta là một quốc gia đa dân tộc. Đặc điểm nổi bật là các dân tộc cùng chung sống lâu đời, có sự đan xen lãnh thổ nhưng mỗi dân tộc vẫn giữ gìn được bản sắc văn hóa riêng, tạo nên sự phong phú cho nền văn hóa thống nhất mà đa dạng."
+                },
+                {
+                    id: "C6_VN_Q5",
+                    question: "Câu 5. Đoàn kết dân tộc có vị trí như thế nào trong sự nghiệp cách mạng ở Việt Nam?",
+                    options: [
+                        "A. Vị trí chiến lược",
+                        "B. Vị trí hàng đầu",
+                        "C. Vị trí chủ yếu",
+                        "D. Vị trí xác định"
+                    ],
+                    correct: 0,
+                    explanation: "Đảng ta luôn nhất quán khẳng định: \"Đại đoàn kết toàn dân tộc là đường lối chiến lược của cách mạng Việt Nam, là động lực và nguồn lực to lớn trong xây dựng và bảo vệ Tổ quốc\"."
+                },
+                {
+                    id: "C6_VN_Q6",
+                    question: "Câu 6. Đoàn kết dân tộc cần được thực hiện gắn liền với điều gì?",
+                    options: [
+                        "A. Chống tư tưởng kỳ thị, chia rẽ dân tộc",
+                        "B. Chống tư tưởng độc lập dân tộc",
+                        "C. Xóa bỏ sự khác biệt giữa các dân tộc",
+                        "D. Xóa bỏ bản sắc riêng của các dân tộc"
+                    ],
+                    correct: 0,
+                    explanation: "Để củng cố khối đại đoàn kết, việc kiên quyết đấu tranh chống lại tư tưởng kỳ thị, chia rẽ, hẹp hòi dân tộc là yêu cầu cấp thiết và xuyên suốt."
+                },
+                {
+                    id: "C6_VN_Q7",
+                    question: "Câu 7. Quyền tự nguyện liên hiệp với các dân tộc khác trên cơ sở bình đẳng là một trong những nội dung của nguyên tắc nào trong Cương lĩnh dân tộc của chủ nghĩa Mác - Lênin?",
+                    options: [
+                        "A. Các dân tộc hoàn toàn bình đẳng",
+                        "B. Các dân tộc được quyền tự quyết",
+                        "C. Liên hiệp công nhân của tất cả các dân tộc",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 1,
+                    explanation: "Quyền tự quyết dân tộc không chỉ là quyền tách ra thành lập quốc gia độc lập mà còn bao gồm quyền tự nguyện liên hiệp lại với các dân tộc khác trên cơ sở bình đẳng hoàn toàn."
+                },
+                {
+                    id: "C6_VN_Q8",
+                    question: "Câu 8. Một trong những nguyên tắc cơ bản của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề dân tộc là:",
+                    options: [
+                        "A. Liên hiệp nông dân tất cả các dân tộc",
+                        "B. Liên hiệp trí thức tất cả các dân tộc",
+                        "C. Liên hiệp công nhân tất cả các dân tộc",
+                        "D. Liên hiệp các giai cấp, tầng lớp trong một quốc gia"
+                    ],
+                    correct: 2,
+                    explanation: "Cương lĩnh dân tộc nhấn mạnh nguyên tắc cốt lõi: đoàn kết, liên hiệp giai cấp công nhân của tất cả các dân tộc lại để tạo ra sức mạnh chung chống lại ách áp bức bóc lột."
+                },
+                {
+                    id: "C6_VN_Q9",
+                    question: "Câu 9. Nguyên tắc \"Các dân tộc hoàn toàn bình đẳng\" được hiểu là quyền thiêng liêng của:",
+                    options: [
+                        "A. Các dân tộc",
+                        "B. Các giai cấp",
+                        "C. Các tầng lớp",
+                        "D. Cả A, B, C đều sai"
+                    ],
+                    correct: 0,
+                    explanation: "Quyền bình đẳng là quyền tự nhiên, thiêng liêng của mọi cộng đồng dân tộc trong quan hệ quốc gia và quốc tế."
+                },
+                {
+                    id: "C6_VN_Q10",
+                    question: "Câu 10. Trong nguyên tắc \"Các dân tộc hoàn toàn bình đẳng\", quyền bình đẳng được hiểu là:",
+                    options: [
+                        "A. Các dân tộc có quyền lợi như nhau",
+                        "B. Các dân tộc không có đặc quyền về kinh tế, chính trị, văn hóa, ngôn ngữ",
+                        "C. Các dân tộc có nghĩa vụ như nhau",
+                        "D. Cả A, B, C đều đúng"
+                    ],
+                    correct: 3,
+                    explanation: "Bình đẳng dân tộc có nghĩa là các dân tộc đều có quyền lợi và nghĩa vụ ngang nhau trước pháp luật và quốc gia, tuyệt đối không cho phép bất kỳ dân tộc nào được hưởng đặc quyền, đặc lợi hay chèn ép dân tộc khác."
+                }
+            ]
+        },
+        // --- PHẦN 3: TÔN GIÁO ---
+        {
+            section: "Chương 6: Vấn đề tôn giáo trong thời kỳ quá độ lên chủ nghĩa xã hội (Phần 1 & 2)",
+            questions: [
+                {
+                    id: "TG_P1_Q1",
+                    question: "Câu 1. Tôn giáo là gì?",
+                    options: [
+                        "A. Tôn giáo là niềm tin của con người tồn tại với hệ thống quan niệm và hoạt động bao gồm đối tượng tôn thờ, giáo lý, giáo luật, lễ nghi và tổ chức",
+                        "B. Tôn giáo là niềm tin của con người được khái quát thành hệ lý luận khoa học...",
+                        "C. Tôn giáo là một tổ chức chính trị - xã hội đặc biệt...",
+                        "D. Tôn giáo là một tổ chức xã hội là đại diện cho quần chúng nhân dân lao động..."
+                    ],
+                    correct: 0,
+                    explanation: "Tôn giáo là một hình thái ý thức xã hội phản ánh hư ảo hiện thực khách quan, bao gồm hệ thống niềm tin, quan niệm, hệ thống giáo lý, giáo luật, lễ nghi và các tổ chức tôn giáo tương ứng."
+                },
+                {
+                    id: "TG_P1_Q2",
+                    question: "Câu 2. Yếu tố quan trọng nhất làm cho các tôn giáo tồn tại lâu dài là gì?",
+                    options: [
+                        "A. Ý thức phản kháng của nhân dân đối với bất công xã hội",
+                        "B. Niềm tin và sự tồn tại của các đấng siêu nhiên, thần thánh",
+                        "C. Khát vọng được giải thoát",
+                        "D. Niềm tin vào thế giới hiện thực"
+                    ],
+                    correct: 1,
+                    explanation: "Sức sống dai dẳng của tôn giáo nằm ở chỗ nó đáp ứng nhu cầu tâm lý, tinh thần của con người thông qua niềm tin có thật vào sự tồn tại của các lực lượng siêu nhiên, thần thánh."
+                },
+                {
+                    id: "TG_P1_Q3",
+                    question: "Câu 3. Điền vào chỗ trống: \"Tôn giáo là một loại hình ý thức xã hội [...] hiện thực khách quan, qua hình thức phản ánh của tôn giáo, những sức mạnh tự phát trong tự nhiên và xã hội trở thành siêu nhiên, thần bí\".",
+                    options: [
+                        "A. Phản ánh một cách hoang đường, hư ảo",
+                        "B. Phản ánh một cách đúng đắn",
+                        "C. Phản ánh một cách khách quan",
+                        "D. Phản ánh niềm tin tuyệt đối"
+                    ],
+                    correct: 0,
+                    explanation: "Đây là định nghĩa kinh điển của Ph. Ăngghen về bản chất phản ánh của tôn giáo: tôn giáo phản ánh hiện thực khách quan một cách hoang đường, hư ảo vào đầu óc con người."
+                },
+                {
+                    id: "TG_P1_Q4",
+                    question: "Câu 4. Mặt TƯ TƯỞNG trong việc giải quyết vấn đề tôn giáo theo quan điểm của chủ nghĩa Mác - Lênin thể hiện ở:",
+                    options: [
+                        "A. Sự lợi dụng tôn giáo",
+                        "B. Sự tín ngưỡng trong tôn giáo",
+                        "C. Sự cuồng tín tôn giáo",
+                        "D. Hành vi mê tín dị đoan"
+                    ],
+                    correct: 1,
+                    explanation: "Khi xem xét tôn giáo, mặt tư tưởng chính là nhu cầu tín ngưỡng, lòng tin thuần túy của quần chúng nhân dân vào tôn giáo (cần được tôn trọng)."
+                },
+                {
+                    id: "TG_P1_Q5",
+                    question: "Câu 5. Mặt CHÍNH TRỊ trong việc giải quyết vấn đề tôn giáo theo quan điểm của chủ nghĩa Mác - Lênin thể hiện ở:",
+                    options: [
+                        "A. Sự cuồng tín tôn giáo",
+                        "B. Sự lợi dụng tôn giáo (của các thế lực thù địch)",
+                        "C. Sự tín ngưỡng trong tôn giáo",
+                        "D. Hành vi dị đoan"
+                    ],
+                    correct: 1,
+                    explanation: "Mặt chính trị phản ánh mâu thuẫn giai cấp hoặc việc các thế lực thù địch lợi dụng tôn giáo, tín ngưỡng để chống phá chế độ chính trị, chia rẽ khối đại đoàn kết (cần kiên quyết đấu tranh)."
+                },
+                {
+                    id: "TG_P1_Q6",
+                    question: "Câu 6. \"Xác định vai trò và sự tác động của từng tôn giáo đối với đời sống xã hội trong mỗi thời kỳ lịch sử khác nhau\" thuộc quan điểm nào của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề tôn giáo?",
+                    options: [
+                        "A. Quan điểm toàn diện",
+                        "B. Quan điểm phát triển",
+                        "C. Quan điểm lịch sử - cụ thể",
+                        "D. Quan điểm khách quan"
+                    ],
+                    correct: 2,
+                    explanation: "Do vai trò, tính chất và mức độ ảnh hưởng của mỗi tôn giáo thay đổi theo từng không gian và thời gian lịch sử cụ thể, việc giải quyết vấn đề tôn giáo bắt buộc phải tuân triệt để quan điểm lịch sử - cụ thể."
+                },
+                {
+                    id: "TG_P1_Q7",
+                    question: "Câu 7. Cần phải có quan điểm lịch sử - cụ thể khi xem xét, đánh giá và giải quyết những vấn đề liên quan đến tôn giáo là nội dung nằm trong:",
+                    options: [
+                        "A. Quan điểm của chủ nghĩa Mác - Lênin trong việc giải quyết vấn đề tôn giáo",
+                        "B. Nguyên nhân tồn tại của tôn giáo",
+                        "C. Nguồn gốc của tôn giáo",
+                        "D. Bản chất của tôn giáo"
+                    ],
+                    correct: 0,
+                    explanation: "Đây là một trong những nguyên tắc, quan điểm phương pháp luận cơ bản hàng đầu của chủ nghĩa Mác - Lênin đối với công tác tôn giáo."
+                },
+                {
+                    id: "TG_P1_Q8",
+                    question: "Câu 8. Tôn giáo ra đời khi nào?",
+                    options: [
+                        "A. Tôn giáo xuất hiện cùng với sự xuất hiện của con người",
+                        "B. Tôn giáo xuất hiện khi xã hội có sự phân chia giai cấp và nhà nước ra đời",
+                        "C. Tôn giáo ra đời khi tư duy của con người đạt đến trình độ tư duy trừu tượng",
+                        "D. Tôn giáo ra đời gắn liền với sự ra đời của chủ nghĩa tư bản"
+                    ],
+                    correct: 2,
+                    explanation: "Xét về nguồn gốc nhận thức, tôn giáo ra đời khi năng lực tư duy của con người đạt đến mức độ khái quát hóa, trừu tượng hóa cao (nhưng đồng thời năng lực nhận thức đó vẫn tách rời thực tiễn, tạo ra sự phóng đại hư ảo)."
+                },
+                {
+                    id: "TG_P1_Q9",
+                    question: "Câu 9. Chọn phương án đúng nhất. Nguyên nhân CHÍNH TRỊ - XÃ HỘI lý giải sự tồn tại của tôn giáo trong tiến trình xây dựng chủ nghĩa xã hội là do:",
+                    options: [
+                        "A. Trình độ dân trí của nhân dân chưa cao",
+                        "B. Sự tồn tại của nền kinh tế nhiều thành phần...",
+                        "C. Những giá trị đạo đức, văn hóa của tôn giáo còn phù hợp với chủ nghĩa xã hội",
+                        "D. Khoa học chưa phát triển cao"
+                    ],
+                    correct: 2,
+                    explanation: "Xét về mặt chính trị - xã hội, tôn giáo tiếp tục đồng hành và tồn tại vì nhiều tư tưởng, giá trị đạo đức, văn hóa hướng thiện của tôn giáo vẫn có sự tương đồng, phù hợp với đạo đức xã hội chủ nghĩa."
+                },
+                {
+                    id: "TG_P1_Q10",
+                    question: "Câu 10. Chọn phương án đúng nhất. Nguyên nhân VĂN HÓA lý giải sự tồn tại của tôn giáo trong tiến trình xây dựng chủ nghĩa xã hội là do:",
+                    options: [
+                        "A. Tôn giáo chưa đáp ứng được nhu cầu văn hóa tinh thần...",
+                        "B. Tôn giáo đáp ứng phần nào nhu cầu văn hóa tinh thần của một bộ phận nhân dân",
+                        "C. Tôn giáo đã đáp ứng được mọi nhu cầu văn hóa tinh thần...",
+                        "D. Khoa học chưa phát triển cao"
+                    ],
+                    correct: 1,
+                    explanation: "Về mặt văn hóa, các sinh hoạt, nghi lễ, không gian sinh hoạt tôn giáo đã đáp ứng một phần nhu cầu sinh hoạt văn hóa tinh thần, tâm linh của một bộ phận quần chúng nhân dân."
+                },
+                {
+                    id: "TG_P2_Q1",
+                    question: "Câu 1. Tính lịch sử của tôn giáo biểu hiện như thế nào?",
+                    options: [
+                        "A. Tôn giáo không phát triển cùng với sự vận động và phát triển của xã hội",
+                        "B. Tôn giáo luôn có sự phát triển cùng với sự vận động và phát triển của xã hội",
+                        "C. Tôn giáo sẽ mất đi hoàn toàn trong xã hội xã hội chủ nghĩa",
+                        "D. Tôn giáo chỉ tồn tại trong xã hội có áp bức bóc lột, có sự phân chia giai cấp"
+                    ],
+                    correct: 1,
+                    explanation: "Tôn giáo không phải là một hiện tượng bất biến, vĩnh hằng mà nó sinh ra, phát triển, biến đổi và có lịch sử của riêng mình, luôn vận động cùng với sự tiến hóa của lịch sử xã hội loài người."
+                },
+                {
+                    id: "TG_P2_Q2",
+                    question: "Câu 2. Nguồn gốc tự nhiên của tôn giáo là gì?",
+                    options: [
+                        "A. Từ sự bất lực của con người trước những lực lượng tự nhiên và xã hội",
+                        "B. Từ sự phân chia giai cấp trong xã hội",
+                        "C. Từ sự xuất hiện các cộng đồng dân tộc",
+                        "D. Từ nhu cầu của các lực lượng chính trị"
+                    ],
+                    correct: 0,
+                    explanation: "Xét về nguồn gốc tự nhiên và kinh tế - xã hội ban đầu, khi lực lượng sản xuất chưa phát triển, con người bất lực trước thiên nhiên và các lực lượng tự phát của xã hội, từ đó họ tha hóa và gán cho các lực lượng đó sức mạnh siêu nhiên."
+                },
+                {
+                    id: "TG_P2_Q3",
+                    question: "Câu 3. Vì sao tôn giáo mang tính quần chúng?",
+                    options: [
+                        "A. Vì tôn giáo đáp ứng nhu cầu tinh thần của một bộ phận quần chúng nhân dân",
+                        "B. Vì tôn giáo là phương tiện thống trị của giai cấp cầm quyền",
+                        "C. Vì tôn giáo mang tính giai cấp",
+                        "D. Vì tôn giáo là sản phẩm của con người"
+                    ],
+                    correct: 0,
+                    explanation: "Tôn giáo mang tính quần chúng sâu sắc bởi vì nó phản ánh tâm tư, nguyện vọng, đem lại sự an ủi tinh thần, niềm tin và đáp ứng một phần nhu cầu văn hóa tâm linh của đông đảo quần chúng nhân dân lao động."
+                },
+                {
+                    id: "TG_P2_Q4",
+                    question: "Câu 4. Khi nào tôn giáo mang tính chính trị?",
+                    options: [
+                        "A. Trong xã hội có phân chia giai cấp và có đối kháng giai cấp",
+                        "B. Ngay từ khi tôn giáo xuất hiện",
+                        "C. Trong thời kỳ quá độ lên chủ nghĩa xã hội",
+                        "D. Trong xã hội nguyên thủy"
+                    ],
+                    correct: 0,
+                    explanation: "Tính chính trị xuất hiện khi xã hội phân chia giai cấp đối kháng, khi các giai cấp thống trị lợi dụng tôn giáo làm công cụ quản lý, phục vụ cho lợi ích chính trị của giai cấp mình."
+                }
+            ]
+        }
+    ];
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        let html = '';
+
+        quizData.forEach((sectionData, sIdx) => {
+            html += `<div class="section-title">${sectionData.section}</div>`;
+
+            sectionData.questions.forEach((q, qIdx) => {
+                html += `
+                <div class="quiz-card" id="card-${q.id}">
+                    <div class="question-number">Mục ${sIdx + 1}.${qIdx + 1}</div>
+                    <div class="question-text">${q.question}</div>
+                    <ul class="options-list">
+                        ${q.options.map((opt, optIdx) => `
+                            <li class="option-item" onclick="checkAnswer('${q.id}', ${optIdx},${q.correct})">
+                                ${opt}
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <div class="explanation-box" id="exp-${q.id}">
+                        <div class="explanation-title">💡 Giải thích chi tiết:</div>
+                        <div>${q.explanation}</div>
+                    </div>
+                </div>
+                `;
+            });
+        });
+
+        container.innerHTML = html;
+    }
+
+    function checkAnswer(questionId, selectedIdx, correctIdx) {
+        const card = document.getElementById(`card-${questionId}`);
+        const options = card.querySelectorAll('.option-item');
+        const expBox = document.getElementById(`exp-${questionId}`);
+
+        // Vô hiệu hóa nhấp lại các lựa chọn sau khi đã chọn
+        options.forEach((opt, idx) => {
+            opt.classList.add('disabled');
+            if (idx === correctIdx) {
+                opt.classList.add('correct');
+            }
+            if (idx === selectedIdx && selectedIdx !== correctIdx) {
+                opt.classList.add('wrong');
+            }
+        });
+
+        // Hiển thị khung giải thích
+        expBox.style.display = 'block';
+    }
+
+    // Khởi tạo trang web
+    window.onload = renderQuiz;
+</script>
+
+</body>
+</html>

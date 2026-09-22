@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Kiểm Tra - Chủ Nghĩa Xã Hội Khoa Học</title>
+    <style>
+        :root {
+            --primary: #8b0000;
+            --primary-light: #fff5f5;
+            --secondary: #d9534f;
+            --success: #28a745;
+            --danger: #dc3545;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-weight: bold;
+        }
+
+        .section-title {
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 30px 0 15px 0;
+            font-size: 1.2rem;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .question-text {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            color: #111;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #f1f3f5;
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .option-btn.selected {
+            background: #e2e3e5;
+            font-weight: bold;
+        }
+
+        .option-btn.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+
+        .explanation {
+            display: none;
+            margin-top: 15px;
+            padding: 12px 15px;
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        .explanation strong {
+            color: var(--primary);
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .btn-reset {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-reset:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>TÀI LIỆU ÔN TẬP CHỦ NGHĨA XÃ HỘI KHOA HỌC</h1>
+        <p>Hệ thống câu hỏi ôn tập tương tác & Chấm điểm tự động</p>
+    </header>
+
+    <div class="stats-bar">
+        <span>Tổng số câu: <span id="total-count">0</span></span>
+        <span>Đã làm: <span id="answered-count">0</span></span>
+        <span style="color: var(--success);">Đúng: <span id="correct-count">0</span></span>
+    </div>
+
+    <form id="quiz-form">
+        <!-- Các câu hỏi sẽ được render tại đây -->
+        <div id="questions-container"></div>
+    </form>
+
+    <div class="actions">
+        <button type="button" class="btn-reset" onclick="resetQuiz()">Làm Lại Từ Đầu</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    // Phần 1: Các câu lẻ ban đầu
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 35. Phong trào đấu tranh nào sau đây là MỘT trong những điều kiện ra đời của chủ nghĩa Mác?",
+        options: [
+            "A. Cách mạng tư sản Anh",
+            "B. Công xã Paris",
+            "C. Cách mạng Tháng Mười Nga",
+            "D. Cuộc khởi nghĩa của công nhân dệt ở Lyon (Pháp)"
+        ],
+        correct: 3,
+        explanation: "Chủ nghĩa Mác ra đời vào những năm 40 của thế kỷ XIX. Công xã Paris (1871) và Cách mạng Tháng Mười Nga (1917) diễn ra sau khi chủ nghĩa Mác đã hình thành. Khởi nghĩa Lyon (những năm 30 thế kỷ XIX) là một trong ba phong trào lớn làm tiền đề thực tiễn khách quan cho sự ra đời của chủ nghĩa Mác."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 36. Một trong những tiền đề quan trọng cho bước chuyển tư tưởng của C. Mác và Ph. Ăngghen từ thế giới quan duy tâm sang thế giới quan duy vật là:",
+        options: [
+            "A. Phép biện chứng của Hê-ghen",
+            "B. Chủ nghĩa duy vật vô thần của Phoi-ơ-bắc (Feuerbach)",
+            "C. Tư tưởng kinh tế của Adam Smith",
+            "D. Tư tưởng xã hội chủ nghĩa của Xanh-ximông"
+        ],
+        correct: 1,
+        explanation: "Phép biện chứng của Hê-ghen mang tính duy tâm. C. Mác và Ph. Ăngghen đã tiếp thu hạt nhân hợp lý từ Hê-ghen kết hợp với thế giới quan duy vật của L. Phoi-ơ-bắc để xây dựng nên Chủ nghĩa duy vật biện chứng."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 1. Cơ cấu xã hội là gì?",
+        options: [
+            "A. Là tổng thể những cộng đồng người và toàn bộ các mối quan hệ xã hội do sự tác động lẫn nhau của các cộng đồng đó tạo nên.",
+            "B. Là hệ thống các giai cấp đấu tranh với nhau trong một chế độ xã hội.",
+            "C. Là sự phân chia dân cư theo trình độ học vấn và mức thu nhập.",
+            "D. Là các tổ chức chính trị - xã hội tồn tại trong chế độ xã hội."
+        ],
+        correct: 0,
+        explanation: "Cơ cấu xã hội là tổng thể những cộng đồng người và toàn bộ các mối quan hệ xã hội do sự tác động lẫn nhau của các cộng đồng đó tạo nên."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 2. Cơ cấu xã hội - giai cấp là gì?",
+        options: [
+            "A. Là sự phân chia xã hội thành người giàu và người nghèo.",
+            "B. Là tổng thể các giai cấp, tầng lớp xã hội tồn tại khách quan trong một chế độ xã hội nhất định, thông qua những mối quan hệ về sở hữu tư liệu sản xuất, về tổ chức quản lý quá trình sản xuất và về phân phối thu nhập.",
+            "C. Là toàn bộ các tổ chức đại diện cho lợi ích của các tầng lớp nhân dân.",
+            "D. Là tổng thể các cộng đồng dân tộc và tôn giáo trong xã hội."
+        ],
+        correct: 1,
+        explanation: "Đáp án đúng theo định nghĩa chuẩn về cơ cấu xã hội - giai cấp."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 3. Vị trí của cơ cấu xã hội - giai cấp trong hệ thống cơ cấu xã hội là gì?",
+        options: [
+            "A. Giữ vị trí thứ yếu so với cơ cấu dân tộc.",
+            "B. Tồn tại độc lập, không ảnh hưởng đến các loại hình cơ cấu khác.",
+            "C. Giữ vị trí trung tâm, chi phối các loại hình cơ cấu xã hội khác.",
+            "D. Là yếu tố thay đổi thường xuyên nhất trong xã hội."
+        ],
+        correct: 2,
+        explanation: "Cơ cấu xã hội - giai cấp giữ vị trí trung tâm, chi phối các loại hình cơ cấu xã hội khác."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 4. Căn cứ để nhận diện cơ cấu xã hội - giai cấp là gì?",
+        options: [
+            "A. Dựa vào địa bàn cư trú của các cộng đồng.",
+            "B. Dựa vào quan hệ sản xuất (quan hệ sở hữu tư liệu sản xuất, tổ chức quản lý và phân phối).",
+            "C. Dựa vào trình độ văn hóa và chuyên môn.",
+            "D. Dựa vào độ tuổi và giới tính."
+        ],
+        correct: 1,
+        explanation: "Quan hệ sản xuất (sở hữu, quản lý, phân phối) là căn cứ cốt lõi để xác định cơ cấu xã hội - giai cấp."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 5. Yếu tố nào có ý nghĩa quyết định sự biến đổi của cơ cấu xã hội - giai cấp?",
+        options: [
+            "A. Cơ cấu kinh tế.",
+            "B. Văn hóa - tư tưởng.",
+            "C. Hệ thống pháp luật.",
+            "D. Chính sách dân số."
+        ],
+        correct: 0,
+        explanation: "Cơ cấu kinh tế quy định sự biến đổi của cơ cấu xã hội - giai cấp."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 6. Yếu tố nào quy định sự đa dạng và phức tạp của cơ cấu xã hội - giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội?",
+        options: [
+            "A. Sự can thiệp của các yếu tố nước ngoài.",
+            "B. Cơ cấu kinh tế (nền kinh tế nhiều thành phần quy định sự tồn tại của nhiều giai cấp, tầng lớp).",
+            "C. Sự phát triển của khoa học công nghệ.",
+            "D. Sự khác biệt về tâm lý vùng miền."
+        ],
+        correct: 1,
+        explanation: "Nền kinh tế nhiều thành phần quy định sự tồn tại của nhiều giai cấp, tầng lớp đa dạng và phức tạp."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 7. Điền vào chỗ trống: Đấu tranh giai cấp và liên minh giai cấp là [...] của quan hệ giai cấp trong thời kỳ quá độ.",
+        options: [
+            "A. Hai mặt đối lập hoàn toàn",
+            "B. Hai mặt tách rời",
+            "C. Hai mặt",
+            "D. Hai giai đoạn"
+        ],
+        correct: 2,
+        explanation: "Đấu tranh giai cấp và liên minh giai cấp là hai mặt của quan hệ giai cấp trong thời kỳ quá độ."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 8. Nguyên nhân sâu xa dẫn đến đấu tranh giữa các giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội là gì?",
+        options: [
+            "A. Do mâu thuẫn giữa lực lượng sản xuất mang tính xã hội hóa ngày càng cao với quan hệ sản xuất dựa trên chế độ chiếm hữu tư nhân về tư liệu sản xuất.",
+            "B. Do sự khác biệt về mức thu nhập giữa các tầng lớp.",
+            "C. Do xung đột về tư tưởng và tôn giáo.",
+            "D. Do sự tranh giành quyền lực chính trị."
+        ],
+        correct: 0,
+        explanation: "Mâu thuẫn giữa LLSX xã hội hóa cao với QHSX dựa trên chế độ tư hữu là nguyên nhân sâu xa."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 9. Nguyên nhân cơ bản dẫn đến sự liên minh giữa các giai cấp, tầng lớp trong thời kỳ quá độ là gì?",
+        options: [
+            "A. Sự cưỡng chế của bộ máy nhà nước.",
+            "B. Sự thống nhất về lợi ích cơ bản.",
+            "C. Sự đồng điệu về văn hóa.",
+            "D. Áp lực từ các thế lực bên ngoài."
+        ],
+        correct: 1,
+        explanation: "Sự thống nhất về lợi ích cơ bản là nền tảng quy định sự liên minh."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 10. Vì sao giai cấp công nhân, giai cấp nông dân và các tầng lớp lao động khác lại liên minh với nhau trong thời kỳ quá độ lên chủ nghĩa xã hội?",
+        options: [
+            "A. Do có cùng trình độ chuyên môn.",
+            "B. Do họ có sự thống nhất về lợi ích cơ bản (cùng chung mục tiêu giải phóng xã hội, xây dựng xã hội mới).",
+            "C. Do bắt buộc theo quy định pháp luật.",
+            "D. Do có cùng địa bàn sinh sống."
+        ],
+        correct: 1,
+        explanation: "Họ có chung lợi ích cơ bản là giải phóng xã hội và xây dựng chủ nghĩa xã hội."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 11. Vì sao các giai cấp, tầng lớp trong thời kỳ quá độ vừa có đấu tranh vừa có liên minh với nhau?",
+        options: [
+            "A. Vì họ có trình độ nhận thức khác nhau.",
+            "B. Vì họ vừa có những lợi ích cơ bản thống nhất (cơ sở để liên minh), vừa có những lợi ích khác biệt, cục bộ (cơ sở của đấu tranh).",
+            "C. Vì sự chỉ đạo thay đổi liên tục của Nhà nước.",
+            "D. Vì họ thuộc các dân tộc khác nhau."
+        ],
+        correct: 1,
+        explanation: "Vừa có lợi ích thống nhất (liên minh) vừa có lợi ích khác biệt/cục bộ (đấu tranh)."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 12. Liên minh giữa giai cấp công nhân, nông dân và tầng lớp trí thức trong thời kỳ quá độ lên chủ nghĩa xã hội biểu hiện trên lĩnh vực chính trị là gì?",
+        options: [
+            "A. Đoàn kết, hợp tác để xây dựng hệ thống chính trị, xây dựng nền dân chủ xã hội chủ nghĩa.",
+            "B. Cùng nhau chia sẻ lợi ích kinh tế trong các xí nghiệp.",
+            "C. Xây dựng nền văn hóa tiên tiến đậm đà bản sắc dân tộc.",
+            "D. Hợp tác phát triển khoa học công nghệ."
+        ],
+        correct: 0,
+        explanation: "Trên lĩnh vực chính trị, liên minh biểu hiện ở việc hợp tác xây dựng hệ thống chính trị và nền dân chủ XHCN."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 13. Vì sao liên minh giữa giai cấp công nhân, nông dân và tầng lớp trí thức là liên minh đặc biệt?",
+        options: [
+            "A. Vì do Đảng Cộng sản thành lập.",
+            "B. Vì đây là khối liên minh hướng tới mục tiêu tự xóa bỏ giai cấp, tiến tới xây dựng xã hội không còn giai cấp.",
+            "C. Vì kéo dài vĩnh viễn trong mọi thời đại.",
+            "D. Vì bao gồm toàn bộ dân số trong xã hội."
+        ],
+        correct: 1,
+        explanation: "Đây là khối liên minh đặc biệt vì nhằm mục tiêu tự xóa bỏ giai cấp, xây dựng xã hội không giai cấp."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 14. Liên minh giai cấp công nhân, giai cấp nông dân và tầng lớp trí thức trong thời kỳ quá độ lên chủ nghĩa xã hội là gì?",
+        options: [
+            "A. Là sự đoàn kết, hợp tác, thống nhất giữa các lực lượng này dưới sự lãnh đạo của Đảng Cộng sản nhằm thực hiện thắng lợi mục tiêu của cách mạng xã hội chủ nghĩa.",
+            "B. Là sự hợp nhất ba giai cấp thành một giai cấp duy nhất.",
+            "C. Là hiệp định hợp tác kinh tế giữa công nghiệp, nông nghiệp và khoa học.",
+            "D. Là sự tập hợp lực lượng mang tính tạm thời."
+        ],
+        correct: 0,
+        explanation: "Đó là sự đoàn kết, hợp tác dưới sự lãnh đạo của Đảng Cộng sản vì mục tiêu cách mạng XHCN."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 15. Một trong các nguyên tắc cơ bản để tăng cường khối liên minh giữa giai cấp công nhân, nông dân và tầng lớp trí thức là gì?",
+        options: [
+            "A. Chia đều tư liệu sản xuất cho các giai cấp.",
+            "B. Đảm bảo vai trò lãnh đạo của giai cấp công nhân (thông qua Đảng Cộng sản).",
+            "C. Xóa bỏ ngay lập tức các thành phần kinh tế tư nhân.",
+            "D. Ưu tiên lợi ích của tầng lớp trí thức lên hàng đầu."
+        ],
+        correct: 1,
+        explanation: "Nguyên tắc cốt lõi là đảm bảo vai trò lãnh đạo của giai cấp công nhân thông qua Đảng Cộng sản."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 16. Giai cấp công nhân Việt Nam trong thời kỳ quá độ lên chủ nghĩa xã hội biến đổi theo xu hướng nào?",
+        options: [
+            "A. Giảm dần về số lượng.",
+            "B. Trí thức hóa (công nhân tri thức).",
+            "C. Chuyển thành giai cấp tiểu tư sản.",
+            "D. Nông dân hóa."
+        ],
+        correct: 1,
+        explanation: "Xu hướng nổi bật của GCKN Việt Nam là trí thức hóa."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 17. Xu hướng biến đổi của giai cấp nông dân Việt Nam trong thời kỳ quá độ lên chủ nghĩa xã hội là:",
+        options: [
+            "A. Tăng nhanh về tỷ trọng trong dân cư.",
+            "B. Giữ nguyên không thay đổi.",
+            "C. Chuyển dịch cơ cấu lao động (giảm dần về số lượng và tỷ trọng trong cơ cấu dân cư do tác động của công nghiệp hóa, hiện đại hóa).",
+            "D. Trở thành giai cấp thống trị."
+        ],
+        correct: 2,
+        explanation: "Giai cấp nông dân giảm dần về tỷ trọng do tác động của CNH, HĐH."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 18. Hoàn thành nhận định sau: [...] là sản phẩm của thời kỳ đổi mới (từ năm 1986 đến nay).",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Giai cấp nông dân",
+            "C. Đội ngũ trí thức",
+            "D. Đội ngũ doanh nhân"
+        ],
+        correct: 3,
+        explanation: "Đội ngũ doanh nhân là sản phẩm của thời kỳ đổi mới phát triển kinh tế nhiều thành phần."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 19. Điền vào chỗ trống: Cương lĩnh của Đảng Cộng sản Việt Nam xác định chiến lược: 'Tăng cường khối đại đoàn kết toàn dân tộc trên [...] liên minh giai cấp công nhân, nông dân và đội ngũ trí thức do Đảng lãnh đạo'.",
+        options: [
+            "A. Cơ sở",
+            "B. Nền tảng",
+            "C. Nguyên tắc",
+            "D. Động lực"
+        ],
+        correct: 1,
+        explanation: "Cụm từ chuẩn trong Cương lĩnh là 'trên nền tảng'."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 20. Vì sao Đảng Cộng sản Việt Nam giữ vai trò lãnh đạo khối liên minh công - nông - trí thức ở Việt Nam?",
+        options: [
+            "A. Vì Đảng có quyền lực tuyệt đối do lịch sử quy định.",
+            "B. Vì Đảng đại diện cho lợi ích của giai cấp công nhân, giai cấp nông dân, đội ngũ trí thức và của cả dân tộc.",
+            "C. Vì các giai cấp khác không muốn tham gia quản lý.",
+            "D. Vì do sự chỉ định của các tổ chức quốc tế."
+        ],
+        correct: 1,
+        explanation: "Đảng đại diện cho lợi ích chung của toàn thể nhân dân lao động và dân tộc."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 21. Điền vào chỗ trống: Cơ cấu xã hội là những [...] cùng toàn bộ những mối [...] xã hội do sự tác động lẫn nhau của các cộng đồng đó tạo nên.",
+        options: [
+            "A. Tập thể / liên hệ",
+            "B. Tổ chức / quan hệ",
+            "C. Cộng đồng người / quan hệ",
+            "D. Giai cấp / tác động"
+        ],
+        correct: 2,
+        explanation: "Điền đúng: Cộng đồng người / quan hệ."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 22. Điền vào chỗ trống: [...] là tổng thể các giai cấp, tầng lớp xã hội tồn tại khách quan.",
+        options: [
+            "A. Cơ cấu xã hội - dân số",
+            "B. Cơ cấu xã hội - giai cấp",
+            "C. Cơ cấu xã hội - nghề nghiệp",
+            "D. Cơ cấu xã hội - dân tộc"
+        ],
+        correct: 1,
+        explanation: "Khái niệm Cơ cấu xã hội - giai cấp."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 23. Điền vào chỗ trống: Cơ cấu xã hội - giai cấp biến đổi gắn liền và bị quy định bởi [...].",
+        options: [
+            "A. Cơ cấu kinh tế",
+            "B. Trình độ dân trí",
+            "C. Thể chế chính trị",
+            "D. Xu thế toàn cầu hóa"
+        ],
+        correct: 0,
+        explanation: "Bị quy định bởi cơ cấu kinh tế."
+    },
+    {
+        section: "Phần 1: Ôn Tập Tổng Hợp",
+        q: "Câu 24. Ở Việt Nam hiện nay, cơ cấu xã hội - giai cấp bao gồm các lực lượng cơ bản nào?",
+        options: [
+            "A. Công nhân, nông dân, địa chủ, tư sản.",
+            "B. Giai cấp công nhân, giai cấp nông dân, đội ngũ trí thức và đội ngũ doanh nhân.",
+            "C. Thợ thủ công, thương nhân, trí thức, công nhân.",
+            "D. Công nhân, nông dân, học sinh - sinh viên, lực lượng vũ trang."
+        ],
+        correct: 1,
+        explanation: "Bao gồm: Giai cấp công nhân, giai cấp nông dân, đội ngũ trí thức và đội ngũ doanh nhân."
+    },
+
+    // Chương 2 - Phần 1
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 1. Phạm trù trung tâm của chủ nghĩa xã hội khoa học là gì?",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Sứ mệnh lịch sử của giai cấp công nhân",
+            "C. Chuyên chính vô sản",
+            "D. Dân chủ xã hội chủ nghĩa"
+        ],
+        correct: 1,
+        explanation: "Việc phát hiện ra sứ mệnh lịch sử của giai cấp công nhân là một trong ba phát kiến vĩ đại của chủ nghĩa Mác, là phạm trù trung tâm của CNXH khoa học."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 2. Giai cấp công nhân có nguồn gốc xuất thân từ những giai cấp, tầng lớp nào trong xã hội?",
+        options: [
+            "A. Giai cấp nông dân",
+            "B. Thợ thủ công",
+            "C. Tiểu tư sản",
+            "D. Từ tất cả các giai cấp, tầng lớp trong xã hội"
+        ],
+        correct: 3,
+        explanation: "Theo Tuyên ngôn của Đảng Cộng sản, giai cấp công nhân được 'tuyển mộ trong tất cả các giai cấp của dân cư'."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 3. Hoàn thành luận điểm của Mác và Ăngghen: 'Tất cả các giai cấp khác đều suy tàn và tiêu vong cùng với sự phát triển của đại công nghiệp, còn giai cấp vô sản trái lại là [...] của bản thân nền đại công nghiệp'.",
+        options: [
+            "A. Sản phẩm",
+            "B. Thành tựu",
+            "C. Kết quả",
+            "D. Chủ thể"
+        ],
+        correct: 0,
+        explanation: "Giai cấp công nhân chính là sản phẩm trực tiếp do nền đại công nghiệp sinh ra."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 4. Trong xã hội tư bản chủ nghĩa, địa vị xã hội của giai cấp công nhân biểu hiện như thế nào?",
+        options: [
+            "A. Giai cấp thống trị và chiếm đoạt giá trị thặng dư",
+            "B. Giai cấp không có tư liệu sản xuất chủ yếu, phải bán sức lao động cho nhà tư bản và bị nhà tư bản bóc lột giá trị thặng dư",
+            "C. Giai cấp có tư liệu sản xuất nên làm chủ giá trị thặng dư",
+            "D. Giai cấp có lợi ích cơ bản thống nhất với lợi ích của giai cấp tư sản"
+        ],
+        correct: 1,
+        explanation: "Không sở hữu tư liệu sản xuất, phải bán sức lao động và bị bóc lột giá trị thặng dư."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 5. Chủ thể chiếm hữu tư liệu sản xuất chủ yếu trong chế độ tư bản chủ nghĩa là:",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Giai cấp tư sản",
+            "C. Giai cấp địa chủ",
+            "D. Giai cấp nông dân"
+        ],
+        correct: 1,
+        explanation: "Giai cấp tư sản nắm giữ tư liệu sản xuất chủ yếu."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 6. Đại biểu cho lực lượng sản xuất tiên tiến trong chế độ tư bản chủ nghĩa là:",
+        options: [
+            "A. Giai cấp nông dân",
+            "B. Giai cấp tư sản",
+            "C. Giai cấp công nhân",
+            "D. Tầng lớp trí thức"
+        ],
+        correct: 2,
+        explanation: "Công nhân trực tiếp vận hành máy móc đại công nghiệp nên đại diện cho LLSX tiên tiến."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 7. Đại biểu cho quan hệ sản xuất chiếm hữu tư nhân tư bản chủ nghĩa về tư liệu sản xuất trong chế độ tư bản chủ nghĩa là:",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Giai cấp nông dân",
+            "C. Giai cấp tư sản",
+            "D. Giai cấp địa chủ"
+        ],
+        correct: 2,
+        explanation: "Giai cấp tư sản là chủ sở hữu, đại diện cho QHSX tư hữu TBCN."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 8. Chọn cụm từ dưới đây để hoàn thành luận điểm sau: 'Trong chế độ tư bản chủ nghĩa, giai cấp công nhân có lợi ích cơ bản [...] với lợi ích của giai cấp tư sản'.",
+        options: [
+            "A. Thống nhất",
+            "B. Phù hợp",
+            "C. Đối lập trực tiếp",
+            "D. Đối lập gián tiếp"
+        ],
+        correct: 2,
+        explanation: "Lợi ích giữa công nhân và tư sản đối lập trực tiếp không thể điều hòa."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 9. Sự khác nhau căn bản giữa giai cấp công nhân ở các nước tư bản chủ nghĩa và xã hội chủ nghĩa biểu hiện ở điều gì?",
+        options: [
+            "A. Phương thức lao động, phương thức sản xuất",
+            "B. Quan hệ sở hữu đối với tư liệu sản xuất chủ yếu của xã hội",
+            "C. Nguồn gốc xuất thân của giai cấp công nhân",
+            "D. Sản phẩm lao động của giai cấp công nhân"
+        ],
+        correct: 1,
+        explanation: "Ở nước TBCN là chế độ tư hữu; ở nước XHCN là chế độ công hữu về tư liệu sản xuất."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 1)",
+        q: "Câu 10. Chọn cụm từ dưới đây để hoàn thành luận điểm của Mác và Ăngghen: 'Trong tất cả các giai cấp hiện đang đối lập với giai cấp tư sản thì chỉ có [...] là giai cấp thực sự cách mạng'.",
+        options: [
+            "A. Giai cấp vô sản",
+            "B. Tầng lớp tiểu tư sản",
+            "C. Tầng lớp trí thức",
+            "D. Giai cấp nông dân"
+        ],
+        correct: 0,
+        explanation: "Chỉ có giai cấp vô sản (công nhân) mới là giai cấp thực sự cách mạng."
+    },
+
+    // Chương 2 - Phần 2
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 1. Giai cấp, tầng lớp nào đại diện cho lực lượng sản xuất tiên tiến trong chủ nghĩa tư bản?",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Giai cấp tư sản",
+            "C. Giai cấp nông dân",
+            "D. Các tầng lớp trí thức"
+        ],
+        correct: 0,
+        explanation: "Giai cấp công nhân vận hành đại công nghiệp, đại diện cho LLSX tiên tiến."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 2. Chọn cụm từ dưới đây để hoàn thành luận điểm của Mác và Ăngghen: 'Trong tất cả các giai cấp hiện đang đối lập với giai cấp tư sản thì chỉ có [...] là giai cấp thực sự cách mạng'.",
+        options: [
+            "A. Giai cấp vô sản",
+            "B. Tầng lớp tiểu tư sản",
+            "C. Tầng lớp trí thức",
+            "D. Giai cấp nông dân"
+        ],
+        correct: 0,
+        explanation: "Giai cấp vô sản mang tính tổ chức kỷ luật và sứ mệnh triệt để xóa bỏ tư hữu."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 3. Sứ mệnh lịch sử của giai cấp công nhân là gì?",
+        options: [
+            "A. Ủng hộ nhân dân lao động xóa bỏ chủ nghĩa tư bản, xây dựng chủ nghĩa xã hội",
+            "B. Ủng hộ giai cấp tư sản xóa bỏ chế độ phong kiến, xây dựng chế độ tư bản chủ nghĩa",
+            "C. Lãnh đạo nhân dân lao động xóa bỏ chế độ chiếm hữu nô lệ, xây dựng chế độ phong kiến",
+            "D. Lãnh đạo cuộc đấu tranh của nhân dân lao động xóa bỏ chế độ tư bản chủ nghĩa, xóa bỏ mọi chế độ áp bức bóc lột và xây dựng thành công chủ nghĩa xã hội và chủ nghĩa cộng sản"
+        ],
+        correct: 3,
+        explanation: "Sứ mệnh toàn thế giới: Lãnh đạo xóa bỏ CNTB, xóa bỏ áp bức bóc lột, xây dựng CNXH và CNCS."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 4. Điều kiện khách quan quy định sứ mệnh lịch sử của giai cấp công nhân là gì?",
+        options: [
+            "A. Địa vị kinh tế - xã hội của giai cấp công nhân và đặc điểm chính trị - xã hội của giai cấp công nhân",
+            "B. Tinh thần cách mạng triệt để của giai cấp công nhân và nhân dân lao động",
+            "C. Tinh thần đoàn kết quốc tế của giai cấp công nhân và nhân dân lao động",
+            "D. Tổ chức chính trị vững mạnh của giai cấp công nhân"
+        ],
+        correct: 0,
+        explanation: "Do địa vị kinh tế - xã hội và đặc điểm chính trị - xã hội quy định."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 5. Giai cấp công nhân là giai cấp có mâu thuẫn đối kháng với:",
+        options: [
+            "A. Giai cấp nông dân",
+            "B. Giai cấp địa chủ",
+            "C. Giai cấp tư sản",
+            "D. Tầng lớp trí thức"
+        ],
+        correct: 2,
+        explanation: "Mâu thuẫn đối kháng trực tiếp với giai cấp tư sản."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 6. Chọn phương án đúng nhất. Trong chế độ tư bản chủ nghĩa, giai cấp công nhân là giai cấp tiên phong cách mạng vì họ là giai cấp:",
+        options: [
+            "A. Đại biểu cho phương thức sản xuất tiên tiến",
+            "B. Được trang bị lý luận khoa học cách mạng",
+            "C. Luôn đi đầu trong mọi phong trào cách mạng",
+            "D. Cả A, B, C đều đúng"
+        ],
+        correct: 3,
+        explanation: "Hội tụ đầy đủ cả 3 lý do trên."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 7. Chọn phương án đúng nhất. Trong chế độ tư bản chủ nghĩa, giai cấp công nhân có thể đoàn kết nội bộ giai cấp vì họ có chung:",
+        options: [
+            "A. Địa vị kinh tế - xã hội",
+            "B. Điều kiện làm việc (tập trung trong các nhà máy, nền đại công nghiệp)",
+            "C. Điều kiện sống (chịu chung sự áp bức, bóc lột)",
+            "D. Cả A, B, C đều đúng"
+        ],
+        correct: 3,
+        explanation: "Chung địa vị, điều kiện làm việc tập trung và chung hoàn cảnh bị bóc lột."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 8. Chọn phương án đúng nhất. Trong chế độ tư bản chủ nghĩa, giai cấp công nhân có thể đoàn kết với các giai cấp, tầng lớp lao động khác vì họ:",
+        options: [
+            "A. Có chung lợi ích kinh tế (bị bóc lột, mất tư liệu sản xuất)",
+            "B. Đều bị giai cấp tư sản bóc lột, áp bức",
+            "C. Có chung nguyện vọng được giải phóng khỏi áp bức, bóc lột, bất công",
+            "D. Cả A, B, C đều đúng"
+        ],
+        correct: 3,
+        explanation: "Tất cả các yếu tố trên tạo nên cơ sở đoàn kết rộng rãi."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 9. Vì sao giai cấp công nhân có khả năng đoàn kết với các giai cấp, tầng lớp lao động khác trong xã hội?",
+        options: [
+            "A. Vì giai cấp công nhân có lợi ích cơ bản thống nhất với lợi ích của các giai cấp, tầng lớp lao động khác trong xã hội",
+            "B. Vì giai cấp công nhân là giai cấp lãnh đạo các giai cấp tầng lớp lao động khác",
+            "C. Vì giai cấp công nhân có số lượng đông đảo nhất",
+            "D. Vì giai cấp công nhân có nhiều tổ chức chính trị"
+        ],
+        correct: 0,
+        explanation: "Nguyên nhân cốt lõi là sự thống nhất về lợi ích cơ bản."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 2)",
+        q: "Câu 10. Nhân tố chủ quan nào có ý nghĩa quyết định đối với việc thực hiện sứ mệnh lịch sử của giai cấp công nhân?",
+        options: [
+            "A. Vai trò lãnh đạo của Đảng Cộng sản",
+            "B. Vai trò của giai cấp nông dân",
+            "C. Vai trò của giai cấp tư sản",
+            "D. Vai trò của tầng lớp trí thức"
+        ],
+        correct: 0,
+        explanation: "Sự lãnh đạo của Đảng Cộng sản là nhân tố chủ quan quyết định hàng đầu."
+    },
+
+    // Chương 2 - Phần 3
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 1. Mục tiêu cao nhất trong sự nghiệp cách mạng của giai cấp công nhân là gì?",
+        options: [
+            "A. Giành chính quyền về tay giai cấp công nhân và nhân dân lao động trên cơ sở lật đổ chính quyền của giai cấp bóc lột",
+            "B. Đánh đổ chế độ tư bản, xóa bỏ áp bức bóc lột bất công trong xã hội tư bản chủ nghĩa",
+            "C. Giải phóng giai cấp công nhân và nhân dân lao động, đồng thời giải phóng xã hội thoát khỏi áp bức bóc lột bất công, xây dựng chủ nghĩa xã hội và chủ nghĩa cộng sản",
+            "D. Giành quyền làm chủ tư liệu sản xuất về tay giai cấp công nhân và nhân dân lao động"
+        ],
+        correct: 2,
+        explanation: "Mục tiêu cao nhất: Giải phóng toàn diện giai cấp và xã hội, xây dựng CNXH và CNCS."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 2. Hoàn thành luận điểm sau: 'Đảng Cộng sản ra đời là sản phẩm của sự kết hợp giữa chủ nghĩa Mác với...'",
+        options: [
+            "A. Phong trào công nhân",
+            "B. Phong trào yêu nước",
+            "C. Truyền thống yêu nước",
+            "D. Truyền thống dân tộc"
+        ],
+        correct: 0,
+        explanation: "Quy luật chung: Chủ nghĩa Mác + Phong trào công nhân."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 3. Chọn cụm từ dưới đây để hoàn thành luận điểm sau: '[...] của Đảng Cộng sản là nguồn bổ sung lực lượng phong phú cho Đảng Cộng sản':",
+        options: [
+            "A. Cơ sở chính trị",
+            "B. Cơ sở giai cấp",
+            "C. Cơ sở xã hội",
+            "D. Cơ sở kinh tế"
+        ],
+        correct: 2,
+        explanation: "Giai cấp công nhân chính là cơ sở xã hội của Đảng."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 4. Vì sao giai cấp công nhân là giai cấp có tinh thần cách mạng triệt để nhất?",
+        options: [
+            "A. Vì giai cấp công nhân có lợi ích cơ bản phù hợp với lợi ích của nhân dân lao động",
+            "B. Vì giai cấp công nhân là giai cấp nghèo khổ nhất trong xã hội",
+            "C. Vì cuộc cách mạng do giai cấp công nhân tiến hành nhằm xóa bỏ mâu thuẫn giai cấp trong xã hội tư bản chủ nghĩa",
+            "D. Vì giai cấp công nhân có lợi ích đối kháng trực tiếp với lợi ích của giai cấp tư sản"
+        ],
+        correct: 3,
+        explanation: "Lợi ích đối kháng trực tiếp nên họ phải xóa bỏ tận gốc chế độ tư hữu."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 5. Vì sao giai cấp công nhân là giai cấp tiên tiến nhất?",
+        options: [
+            "A. Giai cấp công nhân bị giai cấp tư sản áp bức bóc lột nặng nề",
+            "B. Giai cấp công nhân có số lượng đông đảo trong dân cư và là lực lượng lao động xã hội",
+            "C. Giai cấp công nhân đại biểu cho lực lượng sản xuất hiện đại, cho phương thức sản xuất tiên tiến",
+            "D. Giai cấp công nhân có hệ tư tưởng độc lập tiên tiến và có đảng cộng sản lãnh đạo"
+        ],
+        correct: 2,
+        explanation: "Vì họ đại biểu cho LLSX hiện đại và phương thức sản xuất tiên tiến."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 6. Giai cấp nào đại diện cho quan hệ sản xuất tư nhân tư bản chủ nghĩa?",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Giai cấp tư sản",
+            "C. Tầng lớp thanh niên",
+            "D. Tầng lớp trí thức"
+        ],
+        correct: 1,
+        explanation: "Giai cấp tư sản là chủ sở hữu trong xã hội TBCN."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 7. Giai cấp công nhân Việt Nam ra đời trong hoàn cảnh lịch sử nào?",
+        options: [
+            "A. Trong cuộc kháng chiến chống thực dân Pháp giai đoạn 1946 - 1954",
+            "B. Trong kháng chiến chống Mỹ giai đoạn 1954 - 1975",
+            "C. Trong thời kỳ quá độ lên chủ nghĩa xã hội",
+            "D. Trong công cuộc khai thác thuộc địa của Pháp cuối thế kỷ XIX, đầu thế kỷ XX"
+        ],
+        correct: 3,
+        explanation: "Ra đời trong đợt khai thác thuộc địa lần 1 của thực dân Pháp."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 8. Đảng Cộng sản Việt Nam ra đời là sản phẩm của sự kết hợp giữa chủ nghĩa Mác - Lênin với phong trào công nhân và yếu tố nào?",
+        options: [
+            "A. Tư tưởng đoàn kết cộng đồng",
+            "B. Tư tưởng Hồ Chí Minh",
+            "C. Phong trào nông dân và phong trào yêu nước",
+            "D. Phong trào yêu nước"
+        ],
+        correct: 3,
+        explanation: "Quy luật đặc thù Việt Nam: Chủ nghĩa Mác - Lênin + Phong trào công nhân + Phong trào yêu nước."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 9. Tổ chức chính trị cao nhất để lãnh đạo giai cấp công nhân thực hiện sứ mệnh lịch sử là:",
+        options: [
+            "A. Công đoàn",
+            "B. Nghiệp đoàn",
+            "C. Đảng Cộng sản",
+            "D. Hội nông dân"
+        ],
+        correct: 2,
+        explanation: "Đảng Cộng sản là tổ chức chính trị cao nhất."
+    },
+    {
+        section: "Chương 2: Sứ mệnh lịch sử của giai cấp công nhân (Phần 3)",
+        q: "Câu 10. Chọn phương án đúng nhất. Lực lượng sản xuất dưới chủ nghĩa tư bản có tính chất:",
+        options: [
+            "A. Xã hội hóa ngày càng cao",
+            "B. Tư nhân hóa ngày càng cao",
+            "C. Xã hội hóa và tư nhân hóa ngày càng cao",
+            "D. Cả A, B, C đều đúng"
+        ],
+        correct: 0,
+        explanation: "LLSX đạt tính chất xã hội hóa ngày càng cao."
+    },
+
+    // Chương 3 - Phần 1
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 1. Nguyên nhân sâu xa dẫn đến sự thay thế hình thái kinh tế - xã hội tư bản chủ nghĩa bằng hình thái kinh tế - xã hội cộng sản chủ nghĩa là gì?",
+        options: [
+            "A. Mâu thuẫn giữa tư liệu lao động với đối tượng lao động trong nền sản xuất hàng hóa tư bản chủ nghĩa",
+            "B. Mâu thuẫn giữa lực lượng sản xuất mang tính xã hội hóa ngày càng cao với quan hệ sản xuất tư bản chủ nghĩa dựa trên chế độ chiếm hữu tư nhân tư bản chủ nghĩa về tư liệu sản xuất",
+            "C. Mâu thuẫn giữa phương thức sản xuất cộng sản chủ nghĩa với phương thức sản xuất tư bản chủ nghĩa",
+            "D. Mâu thuẫn giữa các giai cấp, tầng lớp ở trong xã hội"
+        ],
+        correct: 1,
+        explanation: "Mâu thuẫn giữa LLSX mang tính xã hội hóa cao với QHSX tư hữu TBCN."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 2. Tiêu chí nào là quan trọng nhất để C. Mác phân chia hai giai đoạn phát triển của hình thái kinh tế - xã hội cộng sản chủ nghĩa?",
+        options: [
+            "A. Ý thức giác ngộ của nhân dân lao động",
+            "B. Trình độ quản lý của nhà nước",
+            "C. Trình độ xã hội hóa của lực lượng sản xuất",
+            "D. Trình độ dân trí của xã hội"
+        ],
+        correct: 2,
+        explanation: "Trình độ xã hội hóa của LLSX là thước đo quan trọng nhất."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 3. Sự khác nhau giữa giai đoạn thấp (CNXH) và giai đoạn cao (CNC) của hình thái kinh tế - xã hội cộng sản chủ nghĩa là gì?",
+        options: [
+            "A. Ở giai đoạn thấp còn có sự phân chia giai cấp, giai đoạn cao không còn giai cấp",
+            "B. Giai đoạn thấp sử dụng pháp quyền tư sản, giai đoạn cao sử dụng pháp quyền xã hội chủ nghĩa",
+            "C. Giai đoạn thấp làm theo năng lực hưởng theo lao động, còn giai đoạn cao làm theo năng lực hưởng theo nhu cầu",
+            "D. Giai đoạn thấp thực hiện phân phối theo nhu cầu, giai đoạn cao thực hiện phân phối theo lao động"
+        ],
+        correct: 2,
+        explanation: "Khác biệt cốt lõi ở nguyên tắc phân phối: Theo lao động (CNXH) vs Theo nhu cầu (CNCS)."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 4. C. Mác đã dựa vào nhân tố nào trong sự vận động của chủ nghĩa tư bản để kết luận rằng xã hội tư bản sẽ chuyển sang xã hội xã hội chủ nghĩa?",
+        options: [
+            "A. Phân tích những áp bức bất công trong xã hội tư bản",
+            "B. Phân tích sự phân hóa giàu nghèo trong xã hội tư bản",
+            "C. Phân tích những hạn chế trong chủ nghĩa tư bản",
+            "D. Phân tích những quy luật kinh tế trong chủ nghĩa tư bản"
+        ],
+        correct: 3,
+        explanation: "Dựa vào phân tích các quy luật kinh tế khách quan của CNTB."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 5. Trong các dự báo sau đây của Mác và Ăngghen, dự báo nào thuộc về GIAI ĐOẠN THẤP của hình thái kinh tế - xã hội cộng sản chủ nghĩa?",
+        options: [
+            "A. Sự đối lập giữa lao động trí óc và lao động chân tay không còn",
+            "B. Không còn sự phân chia giai cấp",
+            "C. Mọi người làm hết năng lực, hưởng theo nhu cầu",
+            "D. Mọi người làm theo năng lực, hưởng theo lao động và vẫn còn pháp quyền tư sản"
+        ],
+        correct: 3,
+        explanation: "Giai đoạn thấp: Phân phối theo lao động và vẫn còn pháp quyền tư sản."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 6. Trong các dự báo sau của Mác, dự báo nào thuộc về GIAI ĐOẠN CAO của hình thái kinh tế - xã hội cộng sản chủ nghĩa?",
+        options: [
+            "A. Xã hội chưa thoát khỏi tàn tích của chủ nghĩa tư bản",
+            "B. Xã hội vẫn còn sự phân chia giai cấp đối kháng trong đó giai cấp công nhân là giai cấp thống trị",
+            "C. Sự phát triển tự do của mỗi người là điều kiện cho sự phát triển tự do của mọi người",
+            "D. Vẫn còn sự tồn tại kết cấu kinh tế của chủ nghĩa tư bản bên cạnh kết cấu kinh tế của chủ nghĩa xã hội"
+        ],
+        correct: 2,
+        explanation: "Giai đoạn cao: Con người phát triển toàn diện, tự do."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 7. Đặc điểm về CHÍNH TRỊ trong thời kỳ quá độ lên chủ nghĩa xã hội là tồn tại:",
+        options: [
+            "A. Kết cấu xã hội - giai cấp đa dạng, phức tạp",
+            "B. Kết cấu xã hội - giai cấp đơn nhất",
+            "C. Kết cấu xã hội - giai cấp thuần nhất",
+            "D. Cả A, B, C đều sai"
+        ],
+        correct: 0,
+        explanation: "Do kinh tế nhiều thành phần quy định kết cấu xã hội - giai cấp đa dạng, phức tạp."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 8. Thời kỳ quá độ lên chủ nghĩa xã hội tồn tại các giai cấp, tầng lớp nào?",
+        options: [
+            "A. Giai cấp công nhân",
+            "B. Giai cấp nông dân",
+            "C. Những người sản xuất nhỏ, tầng lớp tiểu tư sản",
+            "D. Cả A, B, C đều đúng"
+        ],
+        correct: 3,
+        explanation: "Tồn tại đa dạng nhiều giai cấp, tầng lớp."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 9. Đặc điểm của thời kỳ quá độ lên chủ nghĩa xã hội về mặt TƯ TƯỞNG - VĂN HÓA là gì?",
+        options: [
+            "A. Các yếu tố tư tưởng, văn hóa cũ và mới tồn tại đan xen với nhau",
+            "B. Tồn tại các yếu tố tư tưởng, văn hóa thuần nhất",
+            "C. Chỉ tồn tại tư tưởng, văn hóa tư sản",
+            "D. Cả A, B, C đều đúng"
+        ],
+        correct: 0,
+        explanation: "Yếu tố tư tưởng, văn hóa cũ và mới đan xen lẫn nhau."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 1)",
+        q: "Câu 10. Cuộc đấu tranh giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội diễn ra trong điều kiện mới là giai cấp công nhân đã:",
+        options: [
+            "A. Giành được chính quyền",
+            "B. Chưa giành được chính quyền",
+            "C. Giành được quyền thống trị về mặt kinh tế",
+            "D. Cả A và B đều sai"
+        ],
+        correct: 0,
+        explanation: "Giai cấp công nhân đã giành được chính quyền và trở thành giai cấp cầm quyền."
+    },
+
+    // Chương 3 - Phần 2
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 1. Tiền đề vật chất cho sự ra đời của chủ nghĩa xã hội là gì?",
+        options: [
+            "A. Điện khí hóa nền sản xuất",
+            "B. Tự động hóa nền sản xuất",
+            "C. Tin học hóa nền sản xuất",
+            "D. Xã hội hóa lực lượng sản xuất"
+        ],
+        correct: 3,
+        explanation: "Sự phát triển của LLSX đạt đến trình độ xã hội hóa cao."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 2. Chỉ ra luận điểm chính xác nhất:",
+        options: [
+            "A. Xã hội xã hội chủ nghĩa thực hiện xóa bỏ chế độ tư hữu phong kiến",
+            "B. Xã hội xã hội chủ nghĩa thực hiện xóa bỏ sản xuất hàng hóa",
+            "C. Xã hội xã hội chủ nghĩa thực hiện xóa bỏ sản xuất tự cấp tự túc",
+            "D. Xã hội xã hội chủ nghĩa thực hiện xóa bỏ chế độ tư hữu tư bản chủ nghĩa"
+        ],
+        correct: 3,
+        explanation: "Xóa bỏ chế độ tư hữu tư bản chủ nghĩa và thiết lập chế độ công hữu."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 3. Chỉ ra luận điểm KHÔNG CHÍNH XÁC:",
+        options: [
+            "A. Giữa xã hội tư bản chủ nghĩa và xã hội xã hội chủ nghĩa là thời kỳ cải biến cách mạng lâu dài và phức tạp",
+            "B. Nhà nước trong thời kỳ quá độ lên chủ nghĩa xã hội là nền chuyên chính cách mạng của giai cấp công nhân",
+            "C. Trong thời kỳ quá độ có thể và cần thủ tiêu mọi tàn tích của chủ nghĩa tư bản",
+            "D. Thời kỳ quá độ lên chủ nghĩa xã hội còn tồn tại nhiều tư tưởng văn hóa cũ và mới đan xen đấu tranh với nhau"
+        ],
+        correct: 2,
+        explanation: "Nhận định 'thủ tiêu mọi tàn tích ngay lập tức' là sai, vì thời kỳ này vẫn cần kế thừa có chọn lọc."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 4. Đặc điểm chủ yếu của thời kỳ quá độ lên chủ nghĩa xã hội là gì?",
+        options: [
+            "A. Chính quyền của giai cấp lao động được thành lập...",
+            "B. Hệ tư tưởng chính trị của giai cấp công nhân là hệ tư tưởng duy nhất...",
+            "C. Tồn tại đan xen, đấu tranh lẫn nhau giữa những nhân tố của xã hội mới và những tàn dư của xã hội cũ trên mọi lĩnh vực của đời sống xã hội",
+            "D. Tồn tại kinh tế thị trường định hướng xã hội chủ nghĩa..."
+        ],
+        correct: 2,
+        explanation: "Đặc điểm bản chất: Sự tồn tại đan xen và đấu tranh giữa cái mới và cái cũ trên mọi lĩnh vực."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 5. Đặc điểm của thời kỳ quá độ lên chủ nghĩa xã hội trên LĨNH VỰC KINH TẾ là gì?",
+        options: [
+            "A. Còn tồn tại nhiều hệ tư tưởng khác nhau",
+            "B. Còn tồn tại nhiều thành phần kinh tế khác nhau",
+            "C. Còn tồn tại giai cấp đối kháng và đấu tranh giai cấp",
+            "D. Còn tồn tại nhiều tàn dư của chế độ cũ để lại"
+        ],
+        correct: 1,
+        explanation: "Về kinh tế: Tồn tại nền kinh tế nhiều thành phần."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 6. Đặc điểm của thời kỳ quá độ lên chủ nghĩa xã hội trên LĨNH VỰC CHÍNH TRỊ là gì?",
+        options: [
+            "A. Còn tồn tại nhiều hình thức sở hữu khác nhau",
+            "B. Còn tồn tại nhiều thành phần kinh tế khác nhau",
+            "C. Còn tồn tại giai cấp và đấu tranh giai cấp",
+            "D. Còn tồn tại tàn dư tư tưởng và văn hóa của chế độ cũ để lại"
+        ],
+        correct: 2,
+        explanation: "Về chính trị: Còn tồn tại giai cấp và đấu tranh giai cấp."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 7. Đặc điểm của thời kỳ quá độ lên chủ nghĩa xã hội trên LĨNH VỰC TƯ TƯỞNG - VĂN HÓA là gì?",
+        options: [
+            "A. Còn tồn tại nhiều hình thức sở hữu khác nhau",
+            "B. Còn tồn tại nhiều thành phần kinh tế khác nhau",
+            "C. Còn tồn tại giai cấp đối kháng và đấu tranh giai cấp",
+            "D. Còn tồn tại nhiều tư tưởng, văn hóa cũ và mới đan xen đấu tranh với nhau"
+        ],
+        correct: 3,
+        explanation: "Về tư tưởng - văn hóa: Tư tưởng cũ và mới đan xen, đấu tranh lẫn nhau."
+    },
+    {
+        section: "Chương 3: Chủ nghĩa xã hội và thời kỳ quá độ (Phần 2)",
+        q: "Câu 8. Thực chất của thời kỳ quá độ từ chủ nghĩa tư bản lên chủ nghĩa xã hội là tồn tại cuộc đấu tranh giai cấp giữ:",
+        options: [
+            "A. Giai cấp công nhân và giai cấp nông dân",
+            "B. Giai cấp công nhân đã giành chính quyền với giai cấp tư sản đã bị lật đổ và các lực lượng phản động",
+            "C. Giai cấp nông dân và giai cấp tư sản",
+            "D. Tầng lớp trí thức và giai cấp tư sản"
+        ],
+        correct: 1,
+        explanation: "Thực chất là cuộc đấu tranh giữa giai cấp công nhân (đã nắm chính quyền) với giai cấp tư sản đã bị lật đổ và các lực lượng thù địch."
+    }
+];
+
+let answeredSet = new Set();
+let correctSet = new Set();
+
+function renderQuiz() {
+    const container = document.getElementById('questions-container');
+    document.getElementById('total-count').innerText = quizData.length;
+    
+    let currentSection = "";
+    
+    quizData.forEach((data, index) => {
+        if (data.section !== currentSection) {
+            currentSection = data.section;
+            const secTitle = document.createElement('div');
+            secTitle.className = 'section-title';
+            secTitle.innerText = currentSection;
+            container.appendChild(secTitle);
+        }
+
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q-card-${index}`;
+
+        const qText = document.createElement('div');
+        qText.className = 'question-text';
+        qText.innerText = data.q;
+        card.appendChild(qText);
+
+        const optionsGrid = document.createElement('div');
+        optionsGrid.className = 'options-grid';
+
+        data.options.forEach((opt, optIdx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(index, optIdx);
+            optionsGrid.appendChild(btn);
+        });
+
+        card.appendChild(optionsGrid);
+
+        const exp = document.createElement('div');
+        exp.className = 'explanation';
+        exp.id = `exp-${index}`;
+        exp.innerHTML = `<strong>Giải thích:</strong> ${data.explanation}`;
+        card.appendChild(exp);
+
+        container.appendChild(card);
+    });
+}
+
+function selectOption(qIdx, optIdx) {
+    const card = document.getElementById(`q-card-${qIdx}`);
+    const btns = card.querySelectorAll('.option-btn');
+    const exp = document.getElementById(`exp-${qIdx}`);
+    const correctIdx = quizData[qIdx].correct;
+
+    // Vô hiệu hóa các nút sau khi chọn
+    btns.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === correctIdx) {
+            btn.classList.add('correct');
+        }
+    });
+
+    if (optIdx !== correctIdx) {
+        btns[optIdx].classList.add('incorrect');
+    } else {
+        correctSet.add(qIdx);
+    }
+
+    answeredSet.add(qIdx);
+    exp.style.display = 'block';
+
+    updateStats();
+}
+
+function updateStats() {
+    document.getElementById('answered-count').innerText = answeredSet.size;
+    document.getElementById('correct-count').innerText = correctSet.size;
+}
+
+function resetQuiz() {
+    answeredSet.clear();
+    correctSet.clear();
+    updateStats();
+    
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+    renderQuiz();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Khởi chạy khi tải trang
+window.onload = renderQuiz;
+</script>
+
+</body>
+</html>
